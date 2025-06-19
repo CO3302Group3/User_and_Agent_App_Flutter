@@ -79,15 +79,21 @@ class _BottomnavigationbarState extends State<Bottomnavigationbar> {
           Icon(Icons.person_outline, color: Colors.white, size: 30.0),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFF3F51B5),
+      floatingActionButton: SizedBox(
+        width: 30,
+        height: 30,
+        child: FloatingActionButton(
+
         onPressed: () {
           setState(() {
             _chatOpen = !_chatOpen;
           });
         },
-        child: Icon(_chatOpen ? Icons.close : Icons.chat),
+        child: Icon(_chatOpen ? Icons.close : Icons.chat, color: Colors.white, size: 18, ),
+          backgroundColor: Colors.indigo.shade400,
       ),
+
+    ),
     );
   }
 

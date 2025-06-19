@@ -9,9 +9,7 @@ class ParkingSlotScreen extends StatefulWidget {
 }
 
 class _ParkingSlotScreenState extends State<ParkingSlotScreen> {
-  late GoogleMapController mapController;
-
-  final LatLng _center = const LatLng(6.9271, 79.8612); // Example: Colombo
+   // Example: Colombo
 
   @override
   Widget build(BuildContext context) {
