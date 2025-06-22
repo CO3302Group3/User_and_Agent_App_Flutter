@@ -8,6 +8,10 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  bool isNotificationOn = true;
+  int rating =0;
+  final TextEditingController feedbackController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,14 +92,59 @@ class _ProfileState extends State<Profile> {
                      SizedBox(width: 20,),
                     Icon(Icons.person_outline,
                         size: 22, color: Colors.white),
-                    SizedBox(width: 110),
+                    SizedBox(width: 30),
                     Text(
                       "Account",
                       style: TextStyle(color: Colors.white,fontSize: 16),
                     ),
-                    SizedBox(width: 90,),
+                    SizedBox(width: 170,),
 
                     Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                  ],
+                ),
+              ),
+            ),
+
+            SizedBox(height: 10,),
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+
+                  padding: const EdgeInsets.symmetric( vertical: 10),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  setState(() {
+                    isNotificationOn = !isNotificationOn;
+                  });
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 20,),
+                    Icon(Icons.notifications,
+                        size: 22, color: Colors.white),
+                    SizedBox(width: 30),
+                    Text(
+                      "Notifications",
+                      style: TextStyle(color: Colors.white,fontSize: 16),
+                    ),
+                    SizedBox(width: 110,), // Pushes the switch to the far right
+                    Switch(
+                      value: isNotificationOn,
+                      onChanged: (bool value) {
+                        setState(() {
+                          isNotificationOn = value;
+                        });
+                      },
+                      activeColor: Colors.white,
+                      inactiveThumbColor: Colors.grey[300],
+                      inactiveTrackColor: Colors.grey[500],
+                    ),
                   ],
                 ),
               ),
@@ -119,16 +168,48 @@ class _ProfileState extends State<Profile> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(width: 20,),
-                    Icon(Icons.person_outline,
+                    Icon(Icons.feedback_outlined,
                         size: 22, color: Colors.white),
-                    SizedBox(width: 110),
+                    SizedBox(width: 30),
                     Text(
-                      "Account",
+                      "Rating & Feedback ",
                       style: TextStyle(color: Colors.white,fontSize: 16),
                     ),
                     SizedBox(width: 90,),
 
                     Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10,),
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+
+                  padding: const EdgeInsets.symmetric( vertical: 40),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  // Your onPressed logic
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 20,),
+
+                    SizedBox(width: 110),
+                    Text(
+                      "",
+                      style: TextStyle(color: Colors.white,fontSize: 16),
+                    ),
+                    SizedBox(width: 90,),
+
+
                   ],
                 ),
               ),
@@ -152,47 +233,14 @@ class _ProfileState extends State<Profile> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(width: 20,),
-                    Icon(Icons.person_outline,
+                    Icon(Icons.logout,
                         size: 22, color: Colors.white),
-                    SizedBox(width: 110),
+                    SizedBox(width: 30),
                     Text(
-                      "Account",
+                      "Log Out",
                       style: TextStyle(color: Colors.white,fontSize: 16),
                     ),
-                    SizedBox(width: 90,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10,),
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 20),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () {
-                  // Your onPressed logic
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.person_outline,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 110),
-                    Text(
-                      "Account",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
-                    ),
-                    SizedBox(width: 90,),
+                    SizedBox(width: 170,),
 
                     Icon(Icons.chevron_right, size: 22, color: Colors.white,)
                   ],
