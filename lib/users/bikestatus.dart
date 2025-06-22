@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 class Bikestatus extends StatefulWidget {
   @override
   State<Bikestatus> createState() => _BikestatusState();
@@ -64,16 +64,27 @@ class _BikestatusState extends State<Bikestatus> {
 
             SizedBox(height: 20),
 
-            // 🗺️ Google Map View
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Container(
                 width: double.infinity,
                 height: 400,
-                color: Colors.grey.shade300,
-                child: Center(child: Text("Google Map Here")),
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(6.9271, 79.8612), // Example: Colombo coordinates
+                    zoom: 14.0,
+                  ),
+                  mapType: MapType.normal,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
+                  zoomControlsEnabled: false,
+                  onMapCreated: (GoogleMapController controller) {
+                    // Optional: store controller if needed
+                  },
+                ),
               ),
             ),
+
 
 
 

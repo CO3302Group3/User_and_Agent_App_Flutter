@@ -74,6 +74,7 @@ flutter:
     - assets/images/Designer.jpeg
     - assets/images/spinlock.jpg
     - assets/images/google.png
+    - assets/images/Profile.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

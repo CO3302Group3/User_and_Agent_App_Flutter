@@ -10,6 +10,198 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Profile",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.indigo.shade800,
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF3F51B5),
+              Color(0xFFC5CAE9),
+              Color(0xFFE8EAF6),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+            SizedBox(
+              height: 115,
+              width: 115,
+              child: Stack(
+                clipBehavior: Clip.none,
+                fit: StackFit.expand,
+                children: [
+                  const CircleAvatar(
+                    backgroundImage: AssetImage("assets/images/Profile.png"),
+                  ),
+                  Positioned(
+                    right: -10,
+                    bottom: 0,
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFF5F6F9),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        onPressed: () {
+                          // Add your image upload logic here
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+
+                  padding: const EdgeInsets.symmetric( vertical: 20),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  // Your onPressed logic
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                     SizedBox(width: 20,),
+                    Icon(Icons.person_outline,
+                        size: 22, color: Colors.white),
+                    SizedBox(width: 110),
+                    Text(
+                      "Account",
+                      style: TextStyle(color: Colors.white,fontSize: 16),
+                    ),
+                    SizedBox(width: 90,),
+
+                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10,),
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+
+                  padding: const EdgeInsets.symmetric( vertical: 20),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  // Your onPressed logic
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 20,),
+                    Icon(Icons.person_outline,
+                        size: 22, color: Colors.white),
+                    SizedBox(width: 110),
+                    Text(
+                      "Account",
+                      style: TextStyle(color: Colors.white,fontSize: 16),
+                    ),
+                    SizedBox(width: 90,),
+
+                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10,),
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+
+                  padding: const EdgeInsets.symmetric( vertical: 20),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  // Your onPressed logic
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 20,),
+                    Icon(Icons.person_outline,
+                        size: 22, color: Colors.white),
+                    SizedBox(width: 110),
+                    Text(
+                      "Account",
+                      style: TextStyle(color: Colors.white,fontSize: 16),
+                    ),
+                    SizedBox(width: 90,),
+
+                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10,),
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+
+                  padding: const EdgeInsets.symmetric( vertical: 20),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  // Your onPressed logic
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 20,),
+                    Icon(Icons.person_outline,
+                        size: 22, color: Colors.white),
+                    SizedBox(width: 110),
+                    Text(
+                      "Account",
+                      style: TextStyle(color: Colors.white,fontSize: 16),
+                    ),
+                    SizedBox(width: 90,),
+
+                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
