@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 class Bikestatus extends StatefulWidget {
   @override
   State<Bikestatus> createState() => _BikestatusState();
@@ -7,15 +9,63 @@ class Bikestatus extends StatefulWidget {
 
 class _BikestatusState extends State<Bikestatus> {
   bool isBluetoothConnected = false;
+  bool _locationEnabled = false;
+  GoogleMapController? _mapController;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLocationPermission();
+  }
+
+  Future<void> _checkLocationPermission() async {
+    var status = await Permission.locationWhenInUse.request();
+    if (status.isGranted) {
+      setState(() {
+        _locationEnabled = true;
+      });
+    } else {
+      // You could show a dialog or snackbar asking user to enable permission
+      setState(() {
+        _locationEnabled = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  GoogleMap _buildMap() {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: LatLng(6.9271, 79.8612),
+        zoom: 14.0,
+      ),
+      mapType: MapType.normal,
+      myLocationEnabled: _locationEnabled,
+      myLocationButtonEnabled: true,
+      zoomControlsEnabled: false,
+      onMapCreated: (controller) {
+        _mapController = controller;
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Bike Status", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-        backgroundColor:  Colors.indigo.shade800
+        title: Text(
+          "Bike Status",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.indigo.shade800,
       ),
       body: Container(
+        padding: EdgeInsets.all(16),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -27,10 +77,9 @@ class _BikestatusState extends State<Bikestatus> {
             end: Alignment.bottomRight,
           ),
         ),
-        padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            // 🔹 Bluetooth - small card
+            // Bluetooth card
             Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -64,41 +113,25 @@ class _BikestatusState extends State<Bikestatus> {
 
             SizedBox(height: 20),
 
+            // Google Map
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: Container(
+              child: SizedBox(
                 width: double.infinity,
                 height: 400,
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(6.9271, 79.8612), // Example: Colombo coordinates
-                    zoom: 14.0,
-                  ),
-                  mapType: MapType.normal,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  zoomControlsEnabled: false,
-                  onMapCreated: (GoogleMapController controller) {
-                    // Optional: store controller if needed
-                  },
-                ),
+                child: _buildMap(),
               ),
             ),
 
-
-
-
             SizedBox(height: 20),
 
-            // 🔋 🩺 🔒 Status Row in a Container
+            // Status Row
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-
                 color: Colors.indigo.shade400,
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
-
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 6,
@@ -106,7 +139,6 @@ class _BikestatusState extends State<Bikestatus> {
                   ),
                 ],
               ),
-
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -116,9 +148,10 @@ class _BikestatusState extends State<Bikestatus> {
                 ],
               ),
             ),
+
             SizedBox(height: 20),
 
-            // 🚨 Report Theft Button in center
+            // Report button
             Align(
               alignment: Alignment.center,
               child: ElevatedButton.icon(
@@ -126,7 +159,11 @@ class _BikestatusState extends State<Bikestatus> {
                   // Handle report
                 },
                 icon: Icon(Icons.report, color: Colors.white),
-                label: Text("Report Theft / Issue", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                label: Text(
+                  "Report Theft / Issue",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade600,
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -135,7 +172,6 @@ class _BikestatusState extends State<Bikestatus> {
                 ),
               ),
             ),
-
           ],
         ),
       ),
@@ -152,7 +188,11 @@ class _BikestatusState extends State<Bikestatus> {
         ),
         SizedBox(height: 6),
         Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
-        Text(title, style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: TextStyle(
+              fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }

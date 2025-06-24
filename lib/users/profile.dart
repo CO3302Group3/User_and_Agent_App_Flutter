@@ -1,3 +1,4 @@
+import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:flutter/material.dart';
 
 class Profile extends StatefulWidget {
@@ -227,7 +228,7 @@ class _ProfileState extends State<Profile> {
                       borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
-                  // Your onPressed logic
+                  Navigator.push(context, MaterialPageRoute(builder:(context)=> Loginscreen()));
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
