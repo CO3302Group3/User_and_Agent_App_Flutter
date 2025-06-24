@@ -95,8 +95,10 @@ class Home extends StatelessWidget {
 
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Row(
+                    children: [
+
+                      const Row(
+
                         children: [
                           Icon(
                             Icons.pedal_bike,
@@ -115,7 +117,7 @@ class Home extends StatelessWidget {
                         ],
                       ),
 
-                      Icon(
+                      const Icon(
                         Icons.arrow_forward_ios,
                         color: Colors.white,
                         size: 20,

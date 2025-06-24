@@ -33,6 +33,7 @@ dependencies:
   curved_navigation_bar:
   animated_bottom_navigation_bar:
   google_maps_flutter: ^2.5.0
+  permission_handler: ^11.3.0
 
 
   # The following adds the Cupertino Icons font to your application.
