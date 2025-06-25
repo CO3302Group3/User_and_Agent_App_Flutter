@@ -1,16 +1,27 @@
-# computer_engineering_project
+## 📱 Intelligent Bike Parking App
 
-A new Flutter project.
+This Flutter app is part of the **Intelligent Bike Parking & Anti-Theft System**, designed to provide a secure, efficient, and user-friendly solution for urban cyclists.
 
-## Getting Started
+### 🚴‍♂️ Key Features:
 
-This project is a starting point for a Flutter application.
+* 🔐 **Anti-Theft Monitoring**: Real-time alerts triggered by motion or unauthorized movement using sensors.
+* 📍 **GPS Tracking**: View your bike’s live location and track historical movement data.
+* 🅿️ **Smart Parking**: Discover and reserve nearby parking slots offered by verified agents.
+* 💳 **Secure Payments**: Fixed-rate payments for using parking services (optional in future releases).
+* 🌤️ **Solar-Powered Device Support**: Seamlessly integrates with a discreet, solar-powered tracking device mounted on the bike.
 
-A few resources to get you started if this is your first Flutter project:
+### 👥 Users:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+* **Bike Owners**: Track bikes, receive alerts, and find parking.
+* **Parking Agents**: Offer parking slots, manage availability, and collect payments.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 🛠️ Tech Stack:
+
+* **Flutter** (Frontend - Cross-platform)
+* **FastAPI** (Backend)
+* **LoRa / Cellular** (Device communication)
+* **GPS**, **Vibration Sensor**, **Solar Charging** (Embedded device)
+
+### 🚧 Status:
+
+Development in progress — core features are being integrated and tested.
