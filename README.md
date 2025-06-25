@@ -19,7 +19,7 @@ This Flutter app is part of the **Intelligent Bike Parking & Anti-Theft System**
 
 * **Flutter** (Frontend - Cross-platform)
 * **FastAPI** (Backend)
-* **LoRa / Cellular** (Device communication)
+* **WIFI / Cellular** (Device communication)
 * **GPS**, **Vibration Sensor**, **Solar Charging** (Embedded device)
 
 ### 🚧 Status:
