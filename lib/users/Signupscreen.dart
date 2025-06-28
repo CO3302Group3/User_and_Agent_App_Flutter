@@ -1,6 +1,8 @@
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:computer_engineering_project/users/home.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Signupscreen extends StatefulWidget {
   const Signupscreen({super.key});
@@ -10,6 +12,11 @@ class Signupscreen extends StatefulWidget {
 }
 
 class _SignupscreenState extends State<Signupscreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,8 +68,9 @@ class _SignupscreenState extends State<Signupscreen> {
                         color: Colors.indigo.shade100,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const TextField(
-                        decoration: InputDecoration(
+                      child: TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: "Enter your name",
                           hintStyle: TextStyle(
@@ -100,7 +108,8 @@ class _SignupscreenState extends State<Signupscreen> {
                         color: Colors.indigo.shade100,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const TextField(
+                      child:  TextField(
+                        controller: _emailController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Enter your email",
@@ -139,7 +148,10 @@ class _SignupscreenState extends State<Signupscreen> {
                         color: Colors.indigo.shade100,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const TextField(
+                      child: TextField(
+                        obscureText: true,
+
+                        controller: _passwordController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Enter your password",
@@ -160,9 +172,8 @@ class _SignupscreenState extends State<Signupscreen> {
               child: SizedBox(
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Bottomnavigationbar()));
-                  },
+                  onPressed: registerUser,
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[900],
                     minimumSize: const Size.fromHeight(50), // Only height is fixed
@@ -189,4 +200,52 @@ class _SignupscreenState extends State<Signupscreen> {
     ),
     );
   }
+  Future<void> registerUser() async {
+    if (_usernameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    final url = Uri.parse('http://10.0.2.2/auth/register');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "username": _usernameController.text,
+          "email": _emailController.text,
+          "password": _passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Registered successfully");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Bottomnavigationbar()),
+        );
+      } else {
+        print("Registration failed: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to register")),
+        );
+      }
+    } catch (e) {
+      print("Error during registration: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An error occurred. Please try again.")),
+      );
+    }
+  }
+
+
+
+
 }
+
+
+
+

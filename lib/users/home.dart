@@ -71,7 +71,7 @@ class Home extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context)=> const ParkingSlotScreen())
+                    MaterialPageRoute(builder: (context)=>  Parkingslotscreen())
                   );
                 },
 

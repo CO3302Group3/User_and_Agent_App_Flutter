@@ -15,22 +15,12 @@ class _BikestatusState extends State<Bikestatus> {
   @override
   void initState() {
     super.initState();
-    _checkLocationPermission();
+
   }
 
-  Future<void> _checkLocationPermission() async {
-    var status = await Permission.locationWhenInUse.request();
-    if (status.isGranted) {
-      setState(() {
-        _locationEnabled = true;
-      });
-    } else {
-      // You could show a dialog or snackbar asking user to enable permission
-      setState(() {
-        _locationEnabled = false;
-      });
-    }
-  }
+  // add this at the top
+
+
 
   @override
   void dispose() {

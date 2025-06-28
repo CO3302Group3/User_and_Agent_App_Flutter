@@ -1,15 +1,22 @@
+import 'package:computer_engineering_project/services/data.dart';
 import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:computer_engineering_project/users/home.dart';
 import 'package:computer_engineering_project/users/Signupscreen.dart';
+import 'package:computer_engineering_project/users/parkingslotscreen.dart';
 import 'package:computer_engineering_project/users/welcomescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:computer_engineering_project/users/welcomescreen.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey=publishedKey;
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+
   const MyApp({super.key});
 
   // This widget is the root of your application.
@@ -35,7 +42,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Bottomnavigationbar(),
+      home: Home(),
     );
   }
 }

@@ -2,6 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
 
     <application
@@ -35,7 +36,7 @@
         <!-- ✅ Google Maps API Key (fixed line below) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCyFWpS0l3aGqtyoNvxQoPeTDEESMpUAi0" />
+            android:value="AIzaSyDtve2YQvwmRpBqLJNj7wRTmt-7AfiEpuw" />
     </application>
 
     <!-- Required to query text-processing activities -->

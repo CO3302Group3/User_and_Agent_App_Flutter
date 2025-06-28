@@ -1,6 +1,8 @@
 import 'package:computer_engineering_project/users/Signupscreen.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -10,6 +12,9 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +68,8 @@ class _LoginscreenState extends State<Loginscreen> {
                         color: Colors.indigo.shade100,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const TextField(
+                      child:  TextField(
+                        controller: _emailController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Enter your email",
@@ -102,7 +108,8 @@ class _LoginscreenState extends State<Loginscreen> {
                         color: Colors.indigo.shade100,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const TextField(
+                      child:  TextField(
+                        controller: _passwordController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Enter your password",
@@ -153,12 +160,11 @@ class _LoginscreenState extends State<Loginscreen> {
 
               ),
                 SizedBox(width: 10.0),
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder:(context)=> Signupscreen()));
-                  },
+                ElevatedButton(
+                  onPressed: loginUser,
+
                   child: Text(
-                    "Log In ",
+                    "Sign up ",
                     style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
                   ),
                 )
@@ -194,5 +200,47 @@ class _LoginscreenState extends State<Loginscreen> {
       ),
     );
   }
+
+
+  Future<void> loginUser() async {
+    final url = Uri.parse('http://10.0.2.2/auth/login'); // For Android emulator
+
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter both email and password")),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("Login successful");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Bottomnavigationbar()),
+        );
+      } else {
+        print("Login failed: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Invalid email or password")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An error occurred. Please try again.")),
+      );
+    }
   }
+
+}
 
