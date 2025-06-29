@@ -161,12 +161,13 @@ class _LoginscreenState extends State<Loginscreen> {
               ),
                 SizedBox(width: 10.0),
                 ElevatedButton(
-                  onPressed: loginUser,
 
+                  onPressed: loginUser,
                   child: Text(
                     "Sign up ",
                     style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
                   ),
+
                 )
               ]
             ),

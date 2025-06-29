@@ -3,6 +3,7 @@ import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:computer_engineering_project/users/home.dart';
 import 'package:computer_engineering_project/users/Signupscreen.dart';
 import 'package:computer_engineering_project/users/parkingslotscreen.dart';
+import 'package:computer_engineering_project/users/profile.dart';
 import 'package:computer_engineering_project/users/welcomescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Home(),
+      home: Loginscreen(),
     );
   }
 }

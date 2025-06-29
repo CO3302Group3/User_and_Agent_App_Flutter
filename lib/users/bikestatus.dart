@@ -11,6 +11,11 @@ class _BikestatusState extends State<Bikestatus> {
   bool isBluetoothConnected = false;
   bool _locationEnabled = false;
   GoogleMapController? _mapController;
+  static const _initialCameraPosition = CameraPosition(
+    target: LatLng(6.8416, 79.9028),
+    zoom: 13.0,
+  );
+  late GoogleMapController _googleMapController;
 
   @override
   void initState() {
@@ -109,7 +114,10 @@ class _BikestatusState extends State<Bikestatus> {
               child: SizedBox(
                 width: double.infinity,
                 height: 400,
-                child: _buildMap(),
+                child: GoogleMap(myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  initialCameraPosition: _initialCameraPosition,
+                  onMapCreated: (controller) => _googleMapController = controller,),
               ),
             ),
 

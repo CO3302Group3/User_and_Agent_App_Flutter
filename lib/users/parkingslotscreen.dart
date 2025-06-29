@@ -1,3 +1,4 @@
+import 'package:computer_engineering_project/users/ParkingHistoryScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
@@ -10,40 +11,27 @@ class Parkingslotscreen extends StatefulWidget {
 }
 
 class _ParkingslotscreenState extends State<Parkingslotscreen> {
-  static const LatLng _boralesgamuwa = LatLng(6.8210, 79.8913);
-  static const LatLng _parkingSlot = LatLng(6.8722, 79.8862);
+  static const LatLng _boralesgamuwa = LatLng(6.8320, 79.8913);
+
+  final List<LatLng> _parkingSlots = [
+    LatLng(6.8400, 79.8910),
+    LatLng(6.8522, 79.8862),
+  ];
 
   static const _initialCameraPosition = CameraPosition(
     target: _boralesgamuwa,
-    zoom: 12.0,
+    zoom: 13.0,
   );
 
   late GoogleMapController _googleMapController;
   Set<Polyline> _polylines = {};
 
-  @override
-  void initState() {
-    super.initState();
-    _simulateRoute();
-  }
+  LatLng? _selectedParkingSlot;
+  LatLng? _reservedSlot;
+  bool _showReserveButton = false;
 
-  void _simulateRoute() {
-    _polylines.add(
-      Polyline(
-        polylineId: const PolylineId("route"),
-        color: Colors.blue,
-        width: 5,
-        points: [
-          _boralesgamuwa,
-          LatLng(6.8300, 79.8900),
-          LatLng(6.8400, 79.8880),
-          LatLng(6.8500, 79.8870),
-          LatLng(6.8600, 79.8870),
-          _parkingSlot,
-        ],
-      ),
-    );
-  }
+  bool _isCheckedIn = false;
+  DateTime? _checkInTime;
 
   double _calculateDistance(LatLng start, LatLng end) {
     const R = 6371;
@@ -60,7 +48,6 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
   double _deg2rad(double deg) => deg * (pi / 180);
 
   Future<void> _makePayment(int price) async {
-    // Replace with real Stripe payment logic later
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -76,16 +63,61 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
     );
   }
 
+  void _handleCheckInOut() {
+    if (!_isCheckedIn) {
+      setState(() {
+        _isCheckedIn = true;
+        _checkInTime = DateTime.now();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Checked In at ${_checkInTime!.toLocal()}")),
+      );
+    } else {
+      final DateTime checkOutTime = DateTime.now();
+      final Duration parkedDuration = checkOutTime.difference(_checkInTime!);
+      final int minutesParked = parkedDuration.inMinutes;
+      final int cost = minutesParked * 2;
+
+      setState(() {
+        _isCheckedIn = false;
+        _checkInTime = null;
+      });
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Check-Out Complete"),
+          content: Text("Parked for $minutesParked minutes.\nTotal: Rs. $cost"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    double distanceKm = _calculateDistance(_boralesgamuwa, _parkingSlot);
-    int durationMin = (distanceKm / 40 * 60).round();
-    int price = (distanceKm * 50).round();
+    final slot = _selectedParkingSlot ?? _parkingSlots.first;
+    final distanceKm = _calculateDistance(_boralesgamuwa, slot);
+    final durationMin = (distanceKm / 40 * 60).round();
+    final price = (distanceKm * 50).round();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Parking Slot ",style: TextStyle(color: Colors.white),),
+        title: const Text("Parking Slot", style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF3F51B5),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.white),
+            onPressed: () {
+              Navigator.push(context,MaterialPageRoute(builder: (context)=> Parkinghistoryscreen()));
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -102,12 +134,24 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
                   infoWindow: const InfoWindow(title: "You are here"),
                   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
                 ),
-                Marker(
-                  markerId: const MarkerId("parking_slot"),
-                  position: _parkingSlot,
-                  infoWindow: const InfoWindow(title: "Parking Slot"),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-                ),
+                ..._parkingSlots.map((slot) {
+                  return Marker(
+                    markerId: MarkerId(slot.toString()),
+                    position: slot,
+                    infoWindow: const InfoWindow(title: "Parking Slot"),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                      _reservedSlot == slot
+                          ? BitmapDescriptor.hueAzure
+                          : BitmapDescriptor.hueRed,
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _selectedParkingSlot = slot;
+                        _showReserveButton = true;
+                      });
+                    },
+                  );
+                }).toSet(),
               },
               polylines: _polylines,
             ),
@@ -127,20 +171,14 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
                           "Distance: ${distanceKm.toStringAsFixed(2)} km",
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          "Duration: ~${durationMin} min",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          "Price: Rs. $price",
-                          style: const TextStyle(fontSize: 14, color: Colors.green),
-                        ),
+                        Text("Duration: ~${durationMin} min"),
+                        Text("Price: Rs. $price", style: const TextStyle(color: Colors.green)),
                       ],
                     ),
                     ElevatedButton(
                       onPressed: () => _makePayment(price),
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                      child: const Text("Book Now",style: TextStyle(color: Colors.white),),
+                      child: const Text("Book Now", style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -151,12 +189,12 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
                       CameraUpdate.newLatLngBounds(
                         LatLngBounds(
                           southwest: LatLng(
-                            min(_boralesgamuwa.latitude, _parkingSlot.latitude),
-                            min(_boralesgamuwa.longitude, _parkingSlot.longitude),
+                            min(_boralesgamuwa.latitude, slot.latitude),
+                            min(_boralesgamuwa.longitude, slot.longitude),
                           ),
                           northeast: LatLng(
-                            max(_boralesgamuwa.latitude, _parkingSlot.latitude),
-                            max(_boralesgamuwa.longitude, _parkingSlot.longitude),
+                            max(_boralesgamuwa.latitude, slot.latitude),
+                            max(_boralesgamuwa.longitude, slot.longitude),
                           ),
                         ),
                         100,
@@ -170,6 +208,41 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
                     minimumSize: const Size.fromHeight(30),
                   ),
                 ),
+                const SizedBox(height: 10),
+                if (_showReserveButton)
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      if (_selectedParkingSlot != null) {
+                        setState(() {
+                          _reservedSlot = _selectedParkingSlot;
+                          _polylines.clear();
+                          _polylines.add(Polyline(
+                            polylineId: const PolylineId("route"),
+                            color: Colors.blue,
+                            width: 5,
+                            points: [_boralesgamuwa, _reservedSlot!],
+                          ));
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.lock_open),
+                    label: const Text("Reserve"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      minimumSize: const Size.fromHeight(30),
+                    ),
+                  ),
+                const SizedBox(height: 10),
+                if (_reservedSlot != null)
+                  ElevatedButton.icon(
+                    onPressed: _handleCheckInOut,
+                    icon: Icon(_isCheckedIn ? Icons.logout : Icons.login),
+                    label: Text(_isCheckedIn ? "Check Out" : "Check In"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isCheckedIn ? Colors.red : Colors.green,
+                      minimumSize: const Size.fromHeight(30),
+                    ),
+                  ),
               ],
             ),
           ),

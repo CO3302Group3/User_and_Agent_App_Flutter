@@ -1,4 +1,7 @@
+import 'package:computer_engineering_project/users/Accountsetting.dart';
+import 'package:computer_engineering_project/users/Appupdatescreen.dart';
 import 'package:computer_engineering_project/users/Loginscreen.dart';
+import 'package:computer_engineering_project/users/Rating_Feedback.dart';
 import 'package:flutter/material.dart';
 
 class Profile extends StatefulWidget {
@@ -85,7 +88,7 @@ class _ProfileState extends State<Profile> {
                       borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
-                  // Your onPressed logic
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> AccountSettingsPage()));
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -163,7 +166,7 @@ class _ProfileState extends State<Profile> {
                       borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
-                  // Your onPressed logic
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> RatingFeedback()));
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -185,36 +188,33 @@ class _ProfileState extends State<Profile> {
             ),
             SizedBox(height: 10,),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: TextButton(
                 style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 40),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
-                  // Your onPressed logic
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 20,),
-
-                    SizedBox(width: 110),
+                    SizedBox(width: 20),
+                    Icon(Icons.system_update_alt_outlined, size: 22, color: Colors.white),
+                    SizedBox(width: 30),
                     Text(
-                      "",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
+                      "App Updates & Notices",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 90,),
-
-
+                    SizedBox(width: 50),
+                    Icon(Icons.chevron_right, size: 22, color: Colors.white),
                   ],
                 ),
               ),
             ),
+
             SizedBox(height: 10,),
             Padding(
               padding:
