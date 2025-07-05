@@ -1,3 +1,4 @@
+import 'package:computer_engineering_project/Agents/Agentbottomnavigationbar.dart';
 import 'package:computer_engineering_project/services/data.dart';
 import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:computer_engineering_project/users/home.dart';
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Loginscreen(),
+      home: Agentbottomnavigationbar(),
     );
   }
 }

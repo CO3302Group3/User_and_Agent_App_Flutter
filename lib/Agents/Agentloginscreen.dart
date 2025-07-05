@@ -1,21 +1,20 @@
-import 'package:computer_engineering_project/Agents/Agentloginscreen.dart';
+import 'package:computer_engineering_project/Agents/Agentbottomnavigationbar.dart';
 import 'package:computer_engineering_project/users/Signupscreen.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class Loginscreen extends StatefulWidget {
-  const Loginscreen({super.key});
+class Agentloginscreen extends StatefulWidget {
+  const Agentloginscreen({super.key});
 
   @override
-  State<Loginscreen> createState() => _LoginscreenState();
+  State<Agentloginscreen> createState() => _AgentloginscreenState();
 }
 
-class _LoginscreenState extends State<Loginscreen> {
+class _AgentloginscreenState extends State<Agentloginscreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,7 +131,7 @@ class _LoginscreenState extends State<Loginscreen> {
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Bottomnavigationbar()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Agentbottomnavigationbar()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[900],
@@ -154,45 +153,26 @@ class _LoginscreenState extends State<Loginscreen> {
 
             SizedBox(height: 20,),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children:[ Text(
-                "Don't have an account?",
-                style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
-
-              ),
-                SizedBox(width: 10.0),
-                ElevatedButton(
-
-                  onPressed: loginUser,
-                  child: Text(
-                    "Sign up ",
-                    style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
-                  ),
-
-                )
-              ]
-            ),
-
-            SizedBox(height: 60.0,),
-            Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children:[ Text(
-                  "Continue as",
-                  style: TextStyle(color: Colors.white70,fontWeight: FontWeight.bold, fontSize: 18),
+                  "Don't have an account?",
+                  style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
 
                 ),
                   SizedBox(width: 10.0),
-                  GestureDetector(
-                    onTap: (){
-                     Navigator.push(context, MaterialPageRoute(builder: (context)=> Agentloginscreen()));
-                    },
+                  ElevatedButton(
+
+                    onPressed: loginUser,
                     child: Text(
-                      "Agent",
-                      style: TextStyle(color: Colors.indigo.shade600,fontSize: 18, fontWeight: FontWeight.bold),
+                      "Sign up ",
+                      style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
                     ),
+
                   )
                 ]
             ),
+
+
 
 
           ],
@@ -243,6 +223,10 @@ class _LoginscreenState extends State<Loginscreen> {
       );
     }
   }
-
 }
+
+
+
+
+
 
