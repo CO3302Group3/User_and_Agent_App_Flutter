@@ -38,6 +38,8 @@ dependencies:
   flutter_polyline_points:
   flutter_stripe:
   image_picker: ^1.0.4
+  intl: ^0.18.1
+  geocoding: ^2.1.0
 
 
   # The following adds the Cupertino Icons font to your application.

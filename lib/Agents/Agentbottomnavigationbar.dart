@@ -1,7 +1,8 @@
 import 'package:computer_engineering_project/Agents/AgentDashboard.dart';
 import 'package:computer_engineering_project/Agents/Agentnotifications.dart';
 import 'package:computer_engineering_project/Agents/Agentprofile.dart';
-import 'package:computer_engineering_project/Agents/Manageparkingslot.dart';
+import 'package:computer_engineering_project/Agents/AddParkingSlotScreen.dart';
+import 'package:computer_engineering_project/Agents/Manageparkingslotsscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
@@ -16,7 +17,7 @@ class Agentbottomnavigationbar extends StatefulWidget {
 class _AgentbottomnavigationbarState extends State<Agentbottomnavigationbar> {
   late List<Widget> pages;
   late Agentdashboard dashboard;
-  late Manageparkingslot parkingslot;
+  late ManageParkingSlotsScreen parkingslot;
   late Agentnotifications notification;
   late Agentprofile profile;
   int currentTabIndex = 0;
@@ -28,7 +29,7 @@ class _AgentbottomnavigationbarState extends State<Agentbottomnavigationbar> {
   @override
   void initState() {
     dashboard= Agentdashboard();
-    parkingslot= Manageparkingslot();
+    parkingslot= ManageParkingSlotsScreen();
     notification = Agentnotifications();
     profile = Agentprofile();
     pages = [dashboard, parkingslot, notification, profile];
