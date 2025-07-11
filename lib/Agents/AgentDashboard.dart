@@ -1,120 +1,314 @@
-
+import 'package:computer_engineering_project/Agents/Members.dart';
+import 'package:computer_engineering_project/Agents/receivepayment.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:computer_engineering_project/Agents/Requests.dart';
 
 class Agentdashboard extends StatelessWidget {
   const Agentdashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const int occupied = 32;
+    const int available = 18;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Agent Dashboard"),
-        backgroundColor: Colors.indigo,
+        title: const Text("Agent Dashboard", style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF3F51B5),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.inbox_outlined, color: Colors.white),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const Requests()));
+            },
+          ),
+        ],
       ),
       body: Container(
-
-    decoration: const BoxDecoration(
-    gradient: LinearGradient(
-    colors: [
-    Color(0xFF3F51B5),
-    Color(0xFFC5CAE9),
-    Color(0xFFE8EAF6),
-    ],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    ),
-    ),
-
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF3F51B5),
+              Color(0xFFC5CAE9),
+              Color(0xFFE8EAF6),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Stack(
           children: [
-            // Lottie animation banner
-            Lottie.asset('assets/animations/parkingslot.json', height: 300,width: 500),
+            Container(
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
 
-            const SizedBox(height: 16),
+              // --- Stat Cards ---
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: const [
+                  StatCard(
+                    icon: Icons.local_parking,
+                    title: "Occupied Space",
+                    area: "1200 ft²",
+                    bikes: "32 / 50",
+                    color: Colors.redAccent,
+                  ),
+                  StatCard(
+                    icon: Icons.park,
+                    title: "Available Space",
+                    area: "800 ft²",
+                    bikes: "18 / 50",
+                    color: Colors.green,
+                  ),
+                ],
+              ),
 
-            // Slot Stats Cards
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
-                StatCard(title: "Total Slots", count: "50", color: Colors.blue),
-                StatCard(title: "Occupied", count: "32", color: Colors.red),
-                StatCard(title: "Available", count: "18", color: Colors.green),
-              ],
-            ),
+              const SizedBox(height: 30),
 
-            const SizedBox(height: 20),
-
-            // Pie Chart
-            const Text("Slot Usage Breakdown", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(
-              height: 200,
-              child: PieChart(
-                PieChartData(
-                  sections: [
-                    PieChartSectionData(value: 32, color: Colors.red, title: 'Occupied'),
-                    PieChartSectionData(value: 18, color: Colors.green, title: 'Available'),
+              // --- Center Bikes Summary ---
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.indigo.shade300,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.indigo.shade300.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 40,
+                ),
+                child: Column(
+                  children: const [
+                    Text(
+                      "Total Bikes",
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      "12 / 30",
+                      style: TextStyle(fontSize: 18, color: Colors.black87),
+                    ),
+                  ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 40),
 
-            // Arrival/Departure Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                  icon: const Icon(Icons.login),
-                  label: const Text("Confirm Arrival",style: TextStyle(color: Colors.white),),
-                  onPressed: () {},
+              // --- Pie Chart ---
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.indigo.shade700,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
-                  icon: const Icon(Icons.logout),
-                  label: const Text("Confirm Departure"),
-                  onPressed: () {},
+                child: Column(
+                  children: [
+                    const Text(
+                      "Slot Usage Breakdown",
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 150,
+                          width: 150,
+                          child: PieChart(
+                            PieChartData(
+                              sectionsSpace: 2,
+                              centerSpaceRadius: 40,
+                              sections: [
+                                PieChartSectionData(
+                                  value: occupied.toDouble(),
+                                  color: Colors.redAccent,
+                                  title: '$occupied',
+                                  titleStyle: const TextStyle(color: Colors.white, fontSize: 14),
+                                ),
+                                PieChartSectionData(
+                                  value: available.toDouble(),
+                                  color: Colors.green,
+                                  title: '$available',
+                                  titleStyle: const TextStyle(color: Colors.white, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            LegendItem(color: Colors.redAccent, label: "Occupied"),
+                            SizedBox(height: 10),
+                            LegendItem(color: Colors.green, label: "Available"),
+                          ],
+                        )
+                      ],
+                    )
+                  ],
                 ),
-              ],
-            )
-          ],
+              ),
+
+              const SizedBox(height: 50),
+
+              // --- Members and Payments side by side ---
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: DashboardTile(
+                      icon: Icons.people_alt_rounded,
+                      title: "Members",
+                      color: Colors.deepPurple,
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Members() ));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: DashboardTile(
+                      icon: Icons.attach_money,
+                      title: "Payments",
+                      color: Colors.teal,
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> Receivepayment() ));
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+    ],
+      ),
       ),
     );
   }
 }
 
 class StatCard extends StatelessWidget {
+  final IconData icon;
   final String title;
-  final String count;
+  final String area;
+  final String bikes;
   final Color color;
 
-  const StatCard({required this.title, required this.count, required this.color, super.key});
+  const StatCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.area,
+    required this.bikes,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      color: color.withOpacity(0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.all(12),
-        child: Column(
+    return Container(
+      width: 160,
+      height: 130,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 6),
+          Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(height: 4),
+          Text("Area: $area", style: const TextStyle(fontSize: 13)),
+          Text("Bikes: $bikes", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+}
+
+class LegendItem extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const LegendItem({super.key, required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(width: 14, height: 14, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
+      ],
+    );
+  }
+}
+
+class DashboardTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final VoidCallback onTap;
+
+  const DashboardTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.4),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start, // Changed here
           children: [
-            Text(count, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-            const SizedBox(height: 4),
-            Text(title, style: TextStyle(fontSize: 14, color: color)),
+            Icon(icon, color: Colors.white, size: 28),
+            const SizedBox(width: 14),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
