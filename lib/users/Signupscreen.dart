@@ -1,6 +1,4 @@
 import 'package:computer_engineering_project/users/Loginscreen.dart';
-import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
-import 'package:computer_engineering_project/users/home.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -174,8 +172,54 @@ class _SignupscreenState extends State<Signupscreen> {
               child: SizedBox(
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
-                  onPressed:(){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Loginscreen()));
+                  onPressed: () async {
+                    if (_usernameController.text.isEmpty ||
+                        _emailController.text.isEmpty ||
+                        _passwordController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please fill in all fields'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final response = await createuser(
+                        AppConfig.baseURL,
+                        _usernameController.text,
+                        _passwordController.text,
+                        _emailController.text,
+                      );
+
+                      if (response.statusCode == 200 || response.statusCode == 201) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Registration successful!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Loginscreen()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Registration failed: ${response.body}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
 
                   style: ElevatedButton.styleFrom(
