@@ -204,7 +204,26 @@ class _LoginscreenState extends State<Loginscreen> {
       ),
     );
   }
+  Future<String?> loginuser(String baseURL,  String password , String email) async {
+    final String basicauth = 'Basic'+ base64Encode(utf8.encode('$email:$password'));
 
+    final response =await  http.post (
+      Uri.parse('http://$baseURL/auth/login'),
+      headers: <String, String>{
+        'authorization': basicauth,
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+
+    );
+    if (response.statusCode == 200 ){
+      final data = jsonDecode(response.body);
+      return data ['access_token'];
+    } else
+      {
+        print("Login failed: ${response.statusCode}");
+        return null;
+      }
+  }
 
 
 
