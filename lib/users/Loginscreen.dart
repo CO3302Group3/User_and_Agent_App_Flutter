@@ -226,7 +226,8 @@ class _LoginscreenState extends State<Loginscreen> {
     );
     if (response.statusCode == 200 ){
       final data = jsonDecode(response.body);
-      return data ['access_token'];
+      print(data);
+      return data ['data']['access_token'];
     } else
       {
         print("Login failed: ${response.statusCode}");
