@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'token_service.dart';
+import 'token_storage_fallback.dart';
 import 'configurations.dart';
 
 class AuthService {
   // Make authenticated HTTP GET request
   static Future<http.Response?> authenticatedGet(String endpoint) async {
     try {
-      final headers = await TokenService.getAuthHeaders();
+      final headers = await TokenStorageFallback.getAuthHeaders();
       if (headers == null) {
         throw Exception('No authentication token found');
       }
@@ -30,7 +30,7 @@ class AuthService {
     Map<String, dynamic> body
   ) async {
     try {
-      final headers = await TokenService.getAuthHeaders();
+      final headers = await TokenStorageFallback.getAuthHeaders();
       if (headers == null) {
         throw Exception('No authentication token found');
       }
@@ -54,7 +54,7 @@ class AuthService {
     Map<String, dynamic> body
   ) async {
     try {
-      final headers = await TokenService.getAuthHeaders();
+      final headers = await TokenStorageFallback.getAuthHeaders();
       if (headers == null) {
         throw Exception('No authentication token found');
       }
@@ -75,7 +75,7 @@ class AuthService {
   // Make authenticated HTTP DELETE request
   static Future<http.Response?> authenticatedDelete(String endpoint) async {
     try {
-      final headers = await TokenService.getAuthHeaders();
+      final headers = await TokenStorageFallback.getAuthHeaders();
       if (headers == null) {
         throw Exception('No authentication token found');
       }
@@ -104,6 +104,6 @@ class AuthService {
 
   // Logout user by clearing stored data
   static Future<void> logout() async {
-    await TokenService.clearToken();
+    await TokenStorageFallback.clearAll();
   }
 }

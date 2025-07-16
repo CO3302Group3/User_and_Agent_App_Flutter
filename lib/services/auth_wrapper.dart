@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/token_service.dart';
+import 'token_storage_fallback.dart';
 import '../users/welcomescreen.dart';
 import '../users/bottomnavigationbar.dart';
 
@@ -22,7 +22,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   Future<void> _checkLoginStatus() async {
     try {
-      final isLoggedIn = await TokenService.isLoggedIn();
+      final isLoggedIn = await TokenStorageFallback.isLoggedIn();
       setState(() {
         _isLoggedIn = isLoggedIn;
         _isLoading = false;

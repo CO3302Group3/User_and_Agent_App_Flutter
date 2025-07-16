@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/configurations.dart';
-import '../services/token_service.dart';
+import '../services/token_storage_fallback.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -148,8 +148,8 @@ class _LoginscreenState extends State<Loginscreen> {
                       final token = await loginuser(AppConfig.baseURL, password, email);
                       if (token != null) {
                         // Save the token for future use
-                        await TokenService.saveToken(token);
-                        await TokenService.saveUserInfo(email: email);
+                        await TokenStorageFallback.saveToken(token);
+                        await TokenStorageFallback.saveUserInfo(email: email);
                         
                         print("Login successful: $token");
                         ScaffoldMessenger.of(context).showSnackBar(

@@ -5,16 +5,19 @@ import 'package:computer_engineering_project/users/home.dart';
 import 'package:computer_engineering_project/users/Signupscreen.dart';
 import 'package:computer_engineering_project/users/parkingslotscreen.dart';
 import 'package:computer_engineering_project/users/profile.dart';
-import 'package:computer_engineering_project/users/welcomescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
-import 'package:computer_engineering_project/users/welcomescreen.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:computer_engineering_project/services/auth_wrapper.dart';
+import 'package:computer_engineering_project/services/token_storage_fallback.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Stripe.publishableKey=publishedKey;
+  
+  // Initialize token storage (test SharedPreferences and fallback if needed)
+  await TokenStorageFallback.init();
+  
+  Stripe.publishableKey = publishedKey;
   runApp(const MyApp());
 }
 

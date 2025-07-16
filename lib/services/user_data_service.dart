@@ -1,7 +1,7 @@
 import 'dart:convert';
 import '../services/auth_service.dart';
 import '../services/configurations.dart';
-import '../services/token_service.dart';
+import '../services/token_storage_fallback.dart';
 
 class UserDataService {
   // Fetch user profile data
@@ -63,6 +63,6 @@ class UserDataService {
 
   // Get current user info from stored token
   static Future<Map<String, String?>> getCurrentUserInfo() async {
-    return await TokenService.getUserInfo();
+    return await TokenStorageFallback.getUserInfo();
   }
 }
