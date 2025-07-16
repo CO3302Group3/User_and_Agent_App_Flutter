@@ -53,14 +53,14 @@ class Agentdashboard extends StatelessWidget {
                     icon: Icons.local_parking,
                     title: "Occupied Space",
                     area: "1200 ft²",
-                    bikes: "32 / 50",
+
                     color: Colors.redAccent,
                   ),
                   StatCard(
                     icon: Icons.park,
                     title: "Available Space",
                     area: "800 ft²",
-                    bikes: "18 / 50",
+
                     color: Colors.green,
                   ),
                 ],
@@ -201,7 +201,7 @@ class StatCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String area;
-  final String bikes;
+
   final Color color;
 
   const StatCard({
@@ -209,7 +209,6 @@ class StatCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.area,
-    required this.bikes,
     required this.color,
   });
 
@@ -240,7 +239,7 @@ class StatCard extends StatelessWidget {
           Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
           const SizedBox(height: 4),
           Text("Area: $area", style: const TextStyle(fontSize: 13)),
-          Text("Bikes: $bikes", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+
         ],
       ),
     );

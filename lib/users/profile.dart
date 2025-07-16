@@ -202,13 +202,41 @@ class _ProfileState extends State<Profile> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(width: 20),
+                    Icon(Icons.privacy_tip, size: 22, color: Colors.white),
+                    SizedBox(width: 30),
+                    Text(
+                      "Terms & Conditions ",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    SizedBox(width: 80),
+                    Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10,),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: const Color(0xFF3F51B5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 20),
                     Icon(Icons.system_update_alt_outlined, size: 22, color: Colors.white),
                     SizedBox(width: 30),
                     Text(
                       "App Updates & Notices",
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 50),
+                    SizedBox(width: 60),
                     Icon(Icons.chevron_right, size: 22, color: Colors.white),
                   ],
                 ),

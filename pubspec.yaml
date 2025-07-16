@@ -40,6 +40,7 @@ dependencies:
   image_picker: ^1.0.4
   intl: ^0.18.1
   geocoding: ^2.1.0
+  http:
 
 
   # The following adds the Cupertino Icons font to your application.

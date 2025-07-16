@@ -1,8 +1,10 @@
+import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:computer_engineering_project/users/home.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/configurations.dart';
 
 class Signupscreen extends StatefulWidget {
   const Signupscreen({super.key});
@@ -172,7 +174,9 @@ class _SignupscreenState extends State<Signupscreen> {
               child: SizedBox(
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
-                  onPressed: registerUser,
+                  onPressed:(){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Loginscreen()));
+                  },
 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[900],
@@ -200,45 +204,14 @@ class _SignupscreenState extends State<Signupscreen> {
     ),
     );
   }
-  Future<void> registerUser() async {
-    if (_usernameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please fill all fields")),
-      );
-      return;
-    }
-
-    final url = Uri.parse('http://10.0.2.2/auth/register');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "username": _usernameController.text,
-          "email": _emailController.text,
-          "password": _passwordController.text,
-        }),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Registered successfully");
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Bottomnavigationbar()),
-        );
-      } else {
-        print("Registration failed: ${response.body}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to register")),
-        );
-      }
-    } catch (e) {
-      print("Error during registration: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("An error occurred. Please try again.")),
-      );
-    }
+  Future<http.Response> createuser(String baseURL, String username, String password , String email) {
+    return http.post(
+      Uri.parse('http://$baseURL/auth/register'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{'username': username, 'password': password , 'email':email}),
+    );
   }
 
 
