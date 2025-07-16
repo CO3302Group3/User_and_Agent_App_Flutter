@@ -4,6 +4,7 @@ import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/configurations.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -132,6 +133,14 @@ class _LoginscreenState extends State<Loginscreen> {
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
                   onPressed: () {
+                    loginuser(AppConfig.baseURL, _passwordController.text, _emailController.text).then((token) {
+                      if (token != null) {
+                        print("Login successful: $token");
+                        // Navigate to the next screen or perform any action
+                      } else {
+                        print("Login failed");
+                      }
+                    });
                     Navigator.push(context, MaterialPageRoute(builder: (context)=> Bottomnavigationbar()));
                   },
                   style: ElevatedButton.styleFrom(
@@ -205,7 +214,7 @@ class _LoginscreenState extends State<Loginscreen> {
     );
   }
   Future<String?> loginuser(String baseURL,  String password , String email) async {
-    final String basicauth = 'Basic'+ base64Encode(utf8.encode('$email:$password'));
+    final String basicauth = 'Basic '+ base64Encode(utf8.encode('$email:$password'));
 
     final response =await  http.post (
       Uri.parse('http://$baseURL/auth/login'),
