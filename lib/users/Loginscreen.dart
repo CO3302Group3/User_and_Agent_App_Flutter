@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/configurations.dart';
+import '../services/token_service.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -132,16 +133,44 @@ class _LoginscreenState extends State<Loginscreen> {
               child: SizedBox(
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
-                  onPressed: () {
-                    loginuser(AppConfig.baseURL, _passwordController.text, _emailController.text).then((token) {
+                  onPressed: () async {
+                    final email = _emailController.text.trim();
+                    final password = _passwordController.text.trim();
+                    
+                    if (email.isEmpty || password.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill in all fields')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final token = await loginuser(AppConfig.baseURL, password, email);
                       if (token != null) {
+                        // Save the token for future use
+                        await TokenService.saveToken(token);
+                        await TokenService.saveUserInfo(email: email);
+                        
                         print("Login successful: $token");
-                        // Navigate to the next screen or perform any action
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Login successful!')),
+                        );
+                        
+                        // Navigate to the next screen
+                        Navigator.pushReplacement(
+                          context, 
+                          MaterialPageRoute(builder: (context) => Bottomnavigationbar())
+                        );
                       } else {
-                        print("Login failed");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Login failed. Please check your credentials.')),
+                        );
                       }
-                    });
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Bottomnavigationbar()));
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[900],
@@ -213,26 +242,31 @@ class _LoginscreenState extends State<Loginscreen> {
       ),
     );
   }
-  Future<String?> loginuser(String baseURL,  String password , String email) async {
-    final String basicauth = 'Basic '+ base64Encode(utf8.encode('$email:$password'));
+  Future<String?> loginuser(String baseURL, String password, String email) async {
+    try {
+      final String basicauth = 'Basic ' + base64Encode(utf8.encode('$email:$password'));
 
-    final response =await  http.post (
-      Uri.parse('http://$baseURL/auth/login'),
-      headers: <String, String>{
-        'authorization': basicauth,
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      final response = await http.post(
+        Uri.parse('http://$baseURL/auth/login'),
+        headers: <String, String>{
+          'authorization': basicauth,
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
 
-    );
-    if (response.statusCode == 200 ){
-      final data = jsonDecode(response.body);
-      print(data);
-      return data ['data']['access_token'];
-    } else
-      {
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Login response: $data');
+        return data['data']['access_token'];
+      } else {
         print("Login failed: ${response.statusCode}");
+        print("Response body: ${response.body}");
         return null;
       }
+    } catch (e) {
+      print("Login error: $e");
+      rethrow;
+    }
   }
 
 

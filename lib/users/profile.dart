@@ -3,6 +3,7 @@ import 'package:computer_engineering_project/users/Appupdatescreen.dart';
 import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:computer_engineering_project/users/Rating_Feedback.dart';
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -255,8 +256,48 @@ class _ProfileState extends State<Profile> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15)),
                 ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder:(context)=> Loginscreen()));
+                onPressed: () async {
+                  // Show logout confirmation dialog
+                  final shouldLogout = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Logout'),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
+                  if (shouldLogout == true) {
+                    try {
+                      // Clear stored token and user data
+                      await AuthService.logout();
+                      
+                      // Navigate to login screen and remove all previous routes
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => const Loginscreen()),
+                        (Route<dynamic> route) => false,
+                      );
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Logged out successfully')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error logging out: $e')),
+                      );
+                    }
+                  }
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
