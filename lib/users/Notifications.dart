@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/token_storage_fallback.dart';
 
 class Notifications extends StatefulWidget {
   const Notifications({super.key});
@@ -14,6 +17,147 @@ class _NotificationsState extends State<Notifications> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _printFCMToken(); // Automatically save FCM token when screen loads
+  }
+
+  void _printFCMToken() async {
+    try {
+      // Check if Firebase is initialized before trying to get token
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        print("Device FCM Token: $token");
+        
+        // Get user email from storage
+        final userInfo = await TokenStorageFallback.getUserInfo();
+        final userEmail = userInfo['email'];
+        
+        if (userEmail != null && userEmail.isNotEmpty) {
+          // Save FCM token to Firestore
+          await _saveFCMTokenToFirestore(token, userEmail);
+        } else {
+          print("User email not found. Cannot save FCM token to Firestore.");
+        }
+      } else {
+        print("FCM token is null");
+      }
+    } catch (e) {
+      print("Firebase not initialized or FCM not available: $e");
+      print("Please initialize Firebase in main.dart to use FCM tokens");
+    }
+  }
+
+  Future<void> _saveFCMTokenToFirestore(String token, String email) async {
+    try {
+      // Reference to the FCM_Tokens collection
+      final CollectionReference fcmTokens = FirebaseFirestore.instance.collection('FCM_Tokens');
+      
+      // Create document data
+      final tokenData = {
+        'email': email,
+        'fcm_token': token,
+        'timestamp': FieldValue.serverTimestamp(),
+        'device_id': token.substring(0, 20), // Using first 20 chars as device identifier
+      };
+      
+      // Use email as document ID to avoid duplicates for same user
+      await fcmTokens.doc(email).set(tokenData, SetOptions(merge: true));
+      
+      print("FCM token saved to Firestore for user: $email");
+      
+      // Show success message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("FCM token saved successfully"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error saving FCM token to Firestore: $e");
+      
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error saving FCM token: $e"),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showSavedTokens() async {
+    try {
+      final userInfo = await TokenStorageFallback.getUserInfo();
+      final userEmail = userInfo['email'];
+      
+      if (userEmail == null || userEmail.isEmpty) {
+        print("User email not found");
+        return;
+      }
+      
+      // Get the saved token from Firestore
+      final DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('FCM_Tokens')
+          .doc(userEmail)
+          .get();
+      
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final savedToken = data['fcm_token'];
+        final timestamp = data['timestamp'];
+        
+        print("Saved FCM token for $userEmail: $savedToken");
+        print("Timestamp: $timestamp");
+        
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("Saved FCM Token"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Email: $userEmail"),
+                  const SizedBox(height: 8),
+                  Text("Token: ${savedToken?.substring(0, 50)}..."),
+                  const SizedBox(height: 8),
+                  Text("Saved: ${timestamp?.toDate() ?? 'Unknown'}"),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        print("No FCM token found for user: $userEmail");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("No saved FCM token found")),
+          );
+        }
+      }
+    } catch (e) {
+      print("Error retrieving FCM token: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error retrieving token: $e")),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -23,6 +167,16 @@ class _NotificationsState extends State<Notifications> {
         ),
         backgroundColor: Colors.indigo.shade800,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.token, color: Colors.white),
+            onPressed: _printFCMToken,
+            tooltip: "Save FCM Token to Firestore",
+          ),
+          IconButton(
+            icon: const Icon(Icons.info, color: Colors.white),
+            onPressed: _showSavedTokens,
+            tooltip: "Show Saved FCM Token",
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) {

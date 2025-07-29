@@ -20,6 +20,7 @@ class _SignupscreenState extends State<Signupscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -31,20 +32,23 @@ class _SignupscreenState extends State<Signupscreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Column(
-          children: [
-            Container(
-
-
-          width: MediaQuery.of(context).size.width,
-          child: Image.asset(
-            "assets/images/spinlock.jpg",
-                fit: BoxFit.cover,
-          ),
-
-
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
             ),
-            SizedBox(height: 30.0,),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.2, // Reduced to 20% of screen
+              width: MediaQuery.of(context).size.width,
+              child: Image.asset(
+                "assets/images/spinlock.jpg",
+                fit: BoxFit.cover,
+              ),
+            ),
+            SizedBox(height: 20.0,),
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -84,7 +88,7 @@ class _SignupscreenState extends State<Signupscreen> {
                 ),
               ),
             ),
-            SizedBox(height: 10.0,),
+            SizedBox(height: 15.0,),
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -124,7 +128,7 @@ class _SignupscreenState extends State<Signupscreen> {
                 ),
               ),
             ),
-            SizedBox(height: 10.0,),
+            SizedBox(height: 15.0,),
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -167,7 +171,7 @@ class _SignupscreenState extends State<Signupscreen> {
               ),
             ),
 
-           const SizedBox(height: 25.0,),
+           const SizedBox(height: 20.0,),
             Center(
               child: SizedBox(
                 width: 200, // Set your desired width here
@@ -242,10 +246,11 @@ class _SignupscreenState extends State<Signupscreen> {
 
 
           ],
-
+              ),
+            ),
+          ),
         ),
-
-    ),
+      ),
     );
   }
   Future<http.Response> createuser(String baseURL, String username, String password , String email) {

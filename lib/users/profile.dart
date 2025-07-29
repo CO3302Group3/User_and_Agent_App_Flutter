@@ -14,7 +14,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   bool isNotificationOn = true;
-  int rating =0;
+  int rating = 0;
   final TextEditingController feedbackController = TextEditingController();
 
   @override
@@ -41,283 +41,305 @@ class _ProfileState extends State<Profile> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(height: 40),
-            SizedBox(
-              height: 115,
-              width: 115,
-              child: Stack(
-                clipBehavior: Clip.none,
-                fit: StackFit.expand,
-                children: [
-                  const CircleAvatar(
-                    backgroundImage: AssetImage("assets/images/Profile.png"),
-                  ),
-                  Positioned(
-                    right: -10,
-                    bottom: 0,
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFF5F6F9),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 40),
+              SizedBox(
+                height: 115,
+                width: 115,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  fit: StackFit.expand,
+                  children: [
+                    const CircleAvatar(
+                      backgroundImage: AssetImage("assets/images/Profile.png"),
+                    ),
+                    Positioned(
+                      right: -10,
+                      bottom: 0,
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFF5F6F9),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.camera_alt_outlined),
+                          onPressed: () {
+                            // Add your image upload logic here
+                          },
+                        ),
                       ),
-                      child: IconButton(
-                        icon: const Icon(Icons.camera_alt_outlined),
-                        onPressed: () {
-                          // Add your image upload logic here
-                        },
-                      ),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: const Color(0xFF3F51B5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 20),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> AccountSettingsPage()));
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                     SizedBox(width: 20,),
-                    Icon(Icons.person_outline,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
-                      "Account",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
-                    ),
-                    SizedBox(width: 170,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
-                  ],
-                ),
-              ),
-            ),
-
-            SizedBox(height: 10,),
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 10),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () {
-                  setState(() {
-                    isNotificationOn = !isNotificationOn;
-                  });
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.notifications,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
-                      "Notifications",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
-                    ),
-                    SizedBox(width: 110,), // Pushes the switch to the far right
-                    Switch(
-                      value: isNotificationOn,
-                      onChanged: (bool value) {
-                        setState(() {
-                          isNotificationOn = value;
-                        });
-                      },
-                      activeColor: Colors.white,
-                      inactiveThumbColor: Colors.grey[300],
-                      inactiveTrackColor: Colors.grey[500],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10,),
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 20),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> RatingFeedback()));
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.feedback_outlined,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
-                      "Rating & Feedback ",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
-                    ),
-                    SizedBox(width: 90,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10,),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 20),
-                    Icon(Icons.privacy_tip, size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
-                      "Terms & Conditions ",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    SizedBox(width: 80),
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10,),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 20),
-                    Icon(Icons.system_update_alt_outlined, size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
-                      "App Updates & Notices",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    SizedBox(width: 60),
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white),
-                  ],
-                ),
-              ),
-            ),
-
-            SizedBox(height: 10,),
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 20),
-                  backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                ),
-                onPressed: () async {
-                  // Show logout confirmation dialog
-                  final shouldLogout = await showDialog<bool>(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Logout'),
-                        content: const Text('Are you sure you want to logout?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Logout'),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => AccountSettingsPage()));
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Icon(Icons.person_outline, size: 22, color: Colors.white),
+                          SizedBox(width: 30),
+                          Text(
+                            "Account",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
                         ],
-                      );
-                    },
-                  );
-
-                  if (shouldLogout == true) {
-                    try {
-                      // Clear stored token and user data
-                      await AuthService.logout();
-                      
-                      // Navigate to login screen and remove all previous routes
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const Loginscreen()),
-                        (Route<dynamic> route) => false,
-                      );
-                      
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Logged out successfully')),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error logging out: $e')),
-                      );
-                    }
-                  }
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.logout,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
-                      "Log Out",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
-                    ),
-                    SizedBox(width: 170,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
-                  ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child: Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    backgroundColor: const Color(0xFF3F51B5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isNotificationOn = !isNotificationOn;
+                    });
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Icon(Icons.notifications, size: 22, color: Colors.white),
+                          SizedBox(width: 30),
+                          Text(
+                            "Notifications",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 20),
+                        child: Switch(
+                          value: isNotificationOn,
+                          onChanged: (bool value) {
+                            setState(() {
+                              isNotificationOn = value;
+                            });
+                          },
+                          activeColor: Colors.white,
+                          inactiveThumbColor: Colors.grey[300],
+                          inactiveTrackColor: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: const Color(0xFF3F51B5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => RatingFeedback()));
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Icon(Icons.feedback_outlined, size: 22, color: Colors.white),
+                          SizedBox(width: 30),
+                          Text(
+                            "Rating & Feedback ",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child: Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: const Color(0xFF3F51B5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Icon(Icons.privacy_tip, size: 22, color: Colors.white),
+                          SizedBox(width: 30),
+                          Text(
+                            "Terms & Conditions ",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child: Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: const Color(0xFF3F51B5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Icon(Icons.system_update_alt_outlined, size: 22, color: Colors.white),
+                          SizedBox(width: 30),
+                          Text(
+                            "App Updates & Notices",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child: Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: const Color(0xFF3F51B5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () async {
+                    // Show logout confirmation dialog
+                    final shouldLogout = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Logout'),
+                          content: const Text('Are you sure you want to logout?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Logout'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (shouldLogout == true) {
+                      try {
+                        // Clear stored token and user data
+                        await AuthService.logout();
+                        
+                        // Navigate to login screen and remove all previous routes
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => const Loginscreen()),
+                          (Route<dynamic> route) => false,
+                        );
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Logged out successfully')),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error logging out: $e')),
+                        );
+                      }
+                    }
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Icon(Icons.logout, size: 22, color: Colors.white),
+                          SizedBox(width: 30),
+                          Text(
+                            "Log Out",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child: Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20), // Add bottom padding
+            ],
+          ),
         ),
       ),
     );
