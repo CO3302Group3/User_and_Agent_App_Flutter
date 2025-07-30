@@ -14,6 +14,10 @@ class _BikestatusState extends State<Bikestatus> {
   bool isRideMode = false;
   GoogleMapController? _mapController;
 
+  double batteryLevel = 0.0;
+  String heartbeatStatus = "Inactive";
+  String bikeMode = "lock";
+
   // Initial map position
   static const _initialCameraPosition = CameraPosition(
     target: LatLng(6.8132, 79.9655),
@@ -25,7 +29,8 @@ class _BikestatusState extends State<Bikestatus> {
   @override
   void initState() {
     super.initState();
-    _fetchBikeLocation(); // Fetch location on startup
+    _fetchBikeLocation();
+    _fetchBikeHealth();
   }
 
   @override
@@ -133,39 +138,59 @@ class _BikestatusState extends State<Bikestatus> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      statusCard("Battery", "85%", Icons.battery_full, Colors.green),
-                      statusCard("Heartbeat", "Active", Icons.favorite, Colors.red),
+                      // ✅ Use dynamic battery value
+                      statusCard("Battery", "${batteryLevel.toStringAsFixed(1)}%", Icons.battery_full, Colors.green),
 
-                      // Lock or Drive Icon
+                      // ✅ Use dynamic heartbeat value
+                      statusCard("Heartbeat", heartbeatStatus, Icons.favorite, Colors.red),
+
+                      // ✅ Mode Icon & Text from API
                       Column(
                         children: [
                           CircleAvatar(
                             radius: 25,
-                            backgroundColor:
-                            (isRideMode ? Colors.green : Colors.blue).withOpacity(0.2),
+                            backgroundColor: (bikeMode.toLowerCase() == "ride"
+                                ? Colors.green
+                                : Colors.blue)
+                                .withOpacity(0.2),
                             child: Icon(
-                              isRideMode ? Icons.directions_bike : Icons.lock,
-                              color: isRideMode ? Colors.green : Colors.blue,
+                              bikeMode.toLowerCase() == "ride"
+                                  ? Icons.directions_bike
+                                  : Icons.lock,
+                              color: bikeMode.toLowerCase() == "ride"
+                                  ? Colors.green
+                                  : Colors.blue,
                             ),
                           ),
-                          const SizedBox(height: 6,),
+                          const SizedBox(height: 6),
                           Text(
-                            isRideMode ? "Bike Driving Mode" : "Bike Locked",
+                            bikeMode.isNotEmpty ? bikeMode.toUpperCase() : "UNKNOWN",
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: isRideMode ? Colors.green : Colors.blue,
+                              color: bikeMode.toLowerCase() == "ride"
+                                  ? Colors.green
+                                  : Colors.blue,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
+                          Text(
+                            "Mode",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
                       ),
+
                     ],
                   ),
                 ),
 
                 SizedBox(height: 10),
-
 
                 // Report button
                 Align(
@@ -240,7 +265,7 @@ class _BikestatusState extends State<Bikestatus> {
           child: Icon(icon, color: color),
         ),
         SizedBox(height: 6),
-        Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         Text(
           title,
           style: TextStyle(
@@ -261,8 +286,6 @@ class _BikestatusState extends State<Bikestatus> {
         double latitude = telemetry['lat'] ?? 0.0;
         double longitude = telemetry['long'] ?? 0.0;
 
-        print("$latitude,$longitude");
-        // Update marker and camera position
         setState(() {
           _markers = {
             Marker(
@@ -281,6 +304,29 @@ class _BikestatusState extends State<Bikestatus> {
       }
     } catch (e) {
       print("Error fetching bike location: $e");
+    }
+  }
+
+  /// Fetch bike health from API
+  Future<void> _fetchBikeHealth() async {
+    final url = Uri.parse("http://192.168.8.146/device_health/BIKE000000/latest");
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final health = data['health'];
+
+        setState(() {
+          batteryLevel = (health['battery'] ?? 0.0).toDouble();
+          heartbeatStatus = health['heartbeat'] ?? "Inactive";
+          bikeMode = health['mode'] ?? "lock";
+          isRideMode = (bikeMode.toLowerCase() == "ride");
+        });
+      } else {
+        print("Error fetching health: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching bike health: $e");
     }
   }
 }
