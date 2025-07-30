@@ -76,8 +76,8 @@ class _BikestatusState extends State<Bikestatus> {
             padding: EdgeInsets.all(16),
             child: Column(
               children: [
-              // Bluetooth card
-              Container(
+                // Bluetooth card
+                Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Color(0xFFC5CAE9),
@@ -151,10 +151,11 @@ class _BikestatusState extends State<Bikestatus> {
                     ),
                   ],
                 ),
+              ),
 
-                SizedBox(height: 20),
+              SizedBox(height: 20),
 
-                // Google Map
+              // Google Map
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: SizedBox(
@@ -500,7 +501,11 @@ class _BikestatusState extends State<Bikestatus> {
           await FlutterBluePlus.stopScan();
         }
       } catch (stopError) {
+        print("Error stopping scan: $stopError");
       }
+    }
+  }
+
   /// Fetch bike location from API
   Future<void> _fetchBikeLocation() async {
     final url = Uri.parse("http://192.168.8.146/telemetry/latest/BIKE000000");
