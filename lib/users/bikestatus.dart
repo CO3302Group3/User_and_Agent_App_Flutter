@@ -11,12 +11,13 @@ class Bikestatus extends StatefulWidget {
 class _BikestatusState extends State<Bikestatus> {
   bool isBluetoothConnected = false;
   bool _locationEnabled = false;
+  bool isRideMode = false;
   GoogleMapController? _mapController;
 
   // Initial map position
   static const _initialCameraPosition = CameraPosition(
-    target: LatLng(6.8416, 79.9028),
-    zoom: 13.0,
+    target: LatLng(6.8132, 79.9655),
+    zoom: 16.0,
   );
 
   Set<Marker> _markers = {};
@@ -115,7 +116,7 @@ class _BikestatusState extends State<Bikestatus> {
 
                 SizedBox(height: 20),
 
-                // Status Row
+                // Status Row (Battery, Heartbeat, Lock/Drive Icon)
                 Container(
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -134,12 +135,37 @@ class _BikestatusState extends State<Bikestatus> {
                     children: [
                       statusCard("Battery", "85%", Icons.battery_full, Colors.green),
                       statusCard("Heartbeat", "Active", Icons.favorite, Colors.red),
-                      statusCard("Lock", "Locked", Icons.lock, Colors.blue),
+
+                      // Lock or Drive Icon
+                      Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 25,
+                            backgroundColor:
+                            (isRideMode ? Colors.green : Colors.blue).withOpacity(0.2),
+                            child: Icon(
+                              isRideMode ? Icons.directions_bike : Icons.lock,
+                              color: isRideMode ? Colors.green : Colors.blue,
+                            ),
+                          ),
+                          const SizedBox(height: 6,),
+                          Text(
+                            isRideMode ? "Bike Driving Mode" : "Bike Locked",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: isRideMode ? Colors.green : Colors.blue,
+                          ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
 
-                SizedBox(height: 20),
+                SizedBox(height: 10),
+
 
                 // Report button
                 Align(
@@ -160,6 +186,39 @@ class _BikestatusState extends State<Bikestatus> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                // Toggle Button for Lock Mode / Driving Mode
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isRideMode = !isRideMode;
+                    });
+                  },
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor:
+                        (isRideMode ? Colors.green : Colors.blue).withOpacity(0.2),
+                        child: Icon(
+                          isRideMode ? Icons.directions_bike : Icons.lock,
+                          color: isRideMode ? Colors.green : Colors.blue,
+                          size: 30,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        isRideMode ? "Driving Mode" : "Lock Mode",
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 20),
@@ -201,7 +260,6 @@ class _BikestatusState extends State<Bikestatus> {
         final telemetry = data['telemetry'];
         double latitude = telemetry['lat'] ?? 0.0;
         double longitude = telemetry['long'] ?? 0.0;
-
 
         print("$latitude,$longitude");
         // Update marker and camera position
