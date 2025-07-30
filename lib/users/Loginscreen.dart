@@ -21,6 +21,7 @@ class _LoginscreenState extends State<Loginscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -32,7 +33,15 @@ class _LoginscreenState extends State<Loginscreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Column(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: Column(
           children: [
             Container(
 
@@ -237,6 +246,8 @@ class _LoginscreenState extends State<Loginscreen> {
 
           ],
 
+            ),
+        ),
         ),
 
       ),

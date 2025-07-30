@@ -10,9 +10,16 @@ import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:computer_engineering_project/services/auth_wrapper.dart';
 import 'package:computer_engineering_project/services/token_storage_fallback.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Initialize token storage (test SharedPreferences and fallback if needed)
   await TokenStorageFallback.init();
