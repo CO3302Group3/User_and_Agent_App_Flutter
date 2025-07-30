@@ -54,7 +54,9 @@ class _LoginscreenState extends State<Loginscreen> {
 
 
             ),
-            SizedBox(height: 30.0,),
+
+
+
 
             SizedBox(height: 10.0,),
             Center(
@@ -132,6 +134,47 @@ class _LoginscreenState extends State<Loginscreen> {
                         ),
                       ),
                     ),
+
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10.0,),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, // Align "Name" to the left
+                  mainAxisSize: MainAxisSize.min, // Avoid full height
+                  children: [
+                    const Text(
+                      "IP address",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8), // Space between text and container
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child:  TextField(
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Enter your IP address",
+                          hintStyle: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 18.0,
+                          ),
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
               ),
