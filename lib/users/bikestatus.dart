@@ -1,3 +1,4 @@
+import 'package:computer_engineering_project/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'device_list_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/configurations.dart';
 
 class Bikestatus extends StatefulWidget {
   @override
@@ -28,6 +30,41 @@ class _BikestatusState extends State<Bikestatus> {
     target: LatLng(6.8132, 79.9655),
     zoom: 16.0,
   );
+  IconData _getModeIcon(String mode) {
+    switch (mode.toLowerCase()) {
+      case "normal":
+        return Icons.home;
+      case "theft attempt":
+        return Icons.warning;
+      case "deep sleep":
+        return Icons.bedtime;
+      case "tracking":
+        return Icons.location_searching;
+      case "ride":
+        return Icons.directions_bike;
+      case "lock":
+      default:
+        return Icons.lock;
+    }
+  }
+
+  Color _getModeColor(String mode) {
+    switch (mode.toLowerCase()) {
+      case "normal":
+        return Colors.green;
+      case "theft attempt":
+        return Colors.red;
+      case "deep sleep":
+        return Colors.grey;
+      case "tracking":
+        return Colors.orange;
+      case "ride":
+        return Colors.green;
+      case "lock":
+      default:
+        return Colors.blue;
+    }
+  }
 
   Set<Marker> _markers = {};
 
@@ -78,84 +115,84 @@ class _BikestatusState extends State<Bikestatus> {
               children: [
                 // Bluetooth card
                 Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0xFFC5CAE9),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.indigo.shade100),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.bluetooth, color: Colors.black, size: 28),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        isBluetoothConnected
-                            ? "Connected to ${connectedDevice?.platformName ?? 'Device'}"
-                            : "Tap to Pair with Bike",
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFC5CAE9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.indigo.shade100),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.bluetooth, color: Colors.black, size: 28),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isBluetoothConnected
+                              ? "Connected to ${connectedDevice?.platformName ?? 'Device'}"
+                              : "Tap to Pair with Bike",
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: isScanning ? null : () async {
-                        if (isBluetoothConnected && connectedDevice != null) {
-                          // Disconnect from current device
-                          try {
-                            await connectedDevice!.disconnect();
-                            setState(() {
-                              isBluetoothConnected = false;
-                              connectedDevice = null;
-                            });
-                            print("Disconnected from device");
-                          } catch (e) {
-                            print("Error disconnecting: $e");
-                          }
-                        } else {
-                          // Navigate to device list page
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => DeviceListPage()),
-                          );
-                          
-                          // Handle the result from device list page
-                          if (result != null && result['connected'] == true) {
-                            setState(() {
-                              isBluetoothConnected = true;
-                              connectedDevice = result['device'];
-                            });
-                            
-                            // Discover services for the connected device
+                      TextButton(
+                        onPressed: isScanning ? null : () async {
+                          if (isBluetoothConnected && connectedDevice != null) {
+                            // Disconnect from current device
                             try {
-                              List<BluetoothService> services = await result['device'].discoverServices();
-                              print("Discovered ${services.length} services for ${result['device'].platformName}");
-                              
-                              for (BluetoothService service in services) {
-                                print("Service UUID: ${service.uuid}");
-                                for (BluetoothCharacteristic characteristic in service.characteristics) {
-                                  print("  Characteristic UUID: ${characteristic.uuid}");
-                                }
-                              }
+                              await connectedDevice!.disconnect();
+                              setState(() {
+                                isBluetoothConnected = false;
+                                connectedDevice = null;
+                              });
+                              print("Disconnected from device");
                             } catch (e) {
-                              print("Error discovering services: $e");
+                              print("Error disconnecting: $e");
+                            }
+                          } else {
+                            // Navigate to device list page
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => DeviceListPage()),
+                            );
+
+                            // Handle the result from device list page
+                            if (result != null && result['connected'] == true) {
+                              setState(() {
+                                isBluetoothConnected = true;
+                                connectedDevice = result['device'];
+                              });
+
+                              // Discover services for the connected device
+                              try {
+                                List<BluetoothService> services = await result['device'].discoverServices();
+                                print("Discovered ${services.length} services for ${result['device'].platformName}");
+
+                                for (BluetoothService service in services) {
+                                  print("Service UUID: ${service.uuid}");
+                                  for (BluetoothCharacteristic characteristic in service.characteristics) {
+                                    print("  Characteristic UUID: ${characteristic.uuid}");
+                                  }
+                                }
+                              } catch (e) {
+                                print("Error discovering services: $e");
+                              }
                             }
                           }
-                        }
-                      },
-                      child: isScanning 
-                        ? SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(isBluetoothConnected ? "Disconnect" : "Pair"),
-                    ),
-                  ],
+                        },
+                        child: isScanning
+                            ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                            : Text(isBluetoothConnected ? "Disconnect" : "Pair"),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              SizedBox(height: 20),
+                SizedBox(height: 20),
 
-              // Google Map
+                // Google Map
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: SizedBox(
@@ -269,37 +306,87 @@ class _BikestatusState extends State<Bikestatus> {
                 ),
 
                 SizedBox(height: 20),
-
-                // Toggle Button for Lock Mode / Driving Mode
                 GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isRideMode = !isRideMode;
-                    });
+                  onTap: () async {
+                    String? selectedMode = await showModalBottomSheet<String>(
+                      context: context,
+                      builder: (context) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            leading: Icon(Icons.home),
+                            title: Text("Normal"),
+                            onTap: () => Navigator.pop(context, "Normal"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.warning),
+                            title: Text("Theft Attempt"),
+                            onTap: () => Navigator.pop(context, "Theft Attempt"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.bedtime),
+                            title: Text("Deep Sleep"),
+                            onTap: () => Navigator.pop(context, "Deep Sleep"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.location_searching),
+                            title: Text("Tracking"),
+                            onTap: () => Navigator.pop(context, "Tracking"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.directions_bike),
+                            title: Text("Ride"),
+                            onTap: () => Navigator.pop(context, "Ride"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.lock),
+                            title: Text("Lock"),
+                            onTap: () => Navigator.pop(context, "Lock"),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (selectedMode != null) {
+                      setState(() {
+                        bikeMode = selectedMode;
+                        isRideMode = (bikeMode.toLowerCase() == "ride");
+                      });
+
+                      // ✅ Call your function to send the command
+                      await _sendModeCommand(selectedMode);
+                    }
                   },
                   child: Column(
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor:
-                        (isRideMode ? Colors.green : Colors.blue).withOpacity(0.2),
+                        backgroundColor: _getModeColor(bikeMode).withOpacity(0.2),
                         child: Icon(
-                          isRideMode ? Icons.directions_bike : Icons.lock,
-                          color: isRideMode ? Colors.green : Colors.blue,
+                          _getModeIcon(bikeMode),
+                          color: _getModeColor(bikeMode),
                           size: 30,
                         ),
                       ),
                       SizedBox(height: 6),
                       Text(
-                        isRideMode ? "Driving Mode" : "Lock Mode",
+                        bikeMode,
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          foreground: Paint()
+                            ..shader = LinearGradient(
+                              colors: <Color>[Colors.blueAccent, Colors.lightBlue],
+                            ).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
+                        ),
                       ),
                     ],
                   ),
                 ),
+
+
+
+
                 SizedBox(height: 20),
               ],
             ),
@@ -332,28 +419,28 @@ class _BikestatusState extends State<Bikestatus> {
   Future<void> connectToDevice(BluetoothDevice device) async {
     try {
       print("Attempting to connect to ${device.platformName}");
-      
+
       // Connect to the device
       await device.connect(timeout: Duration(seconds: 15));
       print("Connected to ${device.platformName}");
-      
+
       // Update UI state
       setState(() {
         isBluetoothConnected = true;
         connectedDevice = device;
       });
-      
+
       // Discover services
       List<BluetoothService> services = await device.discoverServices();
       print("Discovered ${services.length} services");
-      
+
       for (BluetoothService service in services) {
         print("Service UUID: ${service.uuid}");
         for (BluetoothCharacteristic characteristic in service.characteristics) {
           print("  Characteristic UUID: ${characteristic.uuid}");
         }
       }
-      
+
     } catch (e) {
       print("Error connecting to device: $e");
       setState(() {
@@ -376,10 +463,10 @@ class _BikestatusState extends State<Bikestatus> {
       var locationStatus = await Permission.location.status;
       var bluetoothScanStatus = await Permission.bluetoothScan.status;
       var bluetoothConnectStatus = await Permission.bluetoothConnect.status;
-      
+
       print("Current permissions - Bluetooth: $bluetoothStatus, Location: $locationStatus, Scan: $bluetoothScanStatus, Connect: $bluetoothConnectStatus");
-      
-      if (bluetoothStatus.isDenied || locationStatus.isDenied || 
+
+      if (bluetoothStatus.isDenied || locationStatus.isDenied ||
           bluetoothScanStatus.isDenied || bluetoothConnectStatus.isDenied) {
         // Request permissions
         Map<Permission, PermissionStatus> statuses = await [
@@ -389,9 +476,9 @@ class _BikestatusState extends State<Bikestatus> {
           Permission.location,
           Permission.locationWhenInUse, // Add this for better location access
         ].request();
-        
+
         print("Permission statuses after request: $statuses");
-        
+
         // Check if essential permissions were granted
         if (statuses[Permission.bluetoothScan] != PermissionStatus.granted ||
             statuses[Permission.location] != PermissionStatus.granted) {
@@ -409,10 +496,10 @@ class _BikestatusState extends State<Bikestatus> {
       }
 
       print("Starting BLE scan...");
-      
+
       // Declare subscription variable
       late var subscription;
-      
+
       // Start scanning with more aggressive settings
       await FlutterBluePlus.startScan(
         timeout: Duration(seconds: 20), // Longer timeout
@@ -422,51 +509,51 @@ class _BikestatusState extends State<Bikestatus> {
         continuousUpdates: true, // Get continuous updates
         continuousDivisor: 1, // Update frequency
       );
-      
+
       // Listen for scan results with immediate processing
       subscription = FlutterBluePlus.scanResults.listen((results) async {
         if (results.isNotEmpty) {
           print("Scan results received: ${results.length} devices found");
-          
+
           for (ScanResult result in results) {
             var device = result.device;
             var rssi = result.rssi;
             var name = device.platformName.isNotEmpty ? device.platformName : "Unknown Device";
             var advertisementData = result.advertisementData;
-            
+
             print('Found device: $name (${device.remoteId}) RSSI: $rssi');
             print('  Local Name: ${advertisementData.localName}');
             print('  Manufacturer Data: ${advertisementData.manufacturerData}');
             print('  Service UUIDs: ${advertisementData.serviceUuids}');
-            
+
             // More flexible device filtering - you can adjust this based on your bike's characteristics
             bool isPotentialBike = false;
-            
+
             // Check by name (case-insensitive)
-            if (name.toLowerCase().contains('bike') || 
+            if (name.toLowerCase().contains('bike') ||
                 name.toLowerCase().contains('spinlock') ||
                 name.toLowerCase().contains('lock') ||
                 advertisementData.localName.toLowerCase().contains('bike') ||
                 advertisementData.localName.toLowerCase().contains('spinlock')) {
               isPotentialBike = true;
             }
-            
+
             // You can also check by service UUIDs if you know them
             // if (advertisementData.serviceUuids.contains('your-bike-service-uuid')) {
             //   isPotentialBike = true;
             // }
-            
+
             // For testing purposes, you might want to try connecting to any device with a strong signal
             // Uncomment the line below to try connecting to any nearby device (be careful!)
             // if (rssi > -60) isPotentialBike = true;
-            
+
             // TEMPORARY: For debugging, let's try to connect to the first device we find
             // Remove this when you know your bike's name/characteristics
             if (results.isNotEmpty && isPotentialBike == false && rssi > -70) {
               print("DEBUG: Attempting to connect to first available device for testing");
               isPotentialBike = true;
             }
-            
+
             if (isPotentialBike) {
               print("Found potential bike device: $name");
               // Stop scanning before connecting
@@ -484,15 +571,15 @@ class _BikestatusState extends State<Bikestatus> {
 
       // Wait for scan to complete
       await Future.delayed(Duration(seconds: 20));
-      
+
       // Stop scanning if still running
       if (FlutterBluePlus.isScanningNow) {
         await FlutterBluePlus.stopScan();
       }
       subscription.cancel();
-      
+
       print("BLE scan completed");
-      
+
     } catch (e) {
       print("Error in connectBLE: $e");
       // Make sure to stop scanning if there's an error
@@ -505,10 +592,35 @@ class _BikestatusState extends State<Bikestatus> {
       }
     }
   }
+  Future<void> _sendModeCommand(String mode) async {
+    final url = Uri.parse("http://$serverIp/device_command/add_command");
 
+    final body = json.encode({
+      "command_type": "changemode",
+      "parameters": {"mode": mode},
+      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTg4OTYxMTQsImlhdCI6MTc1ODgwOTcxNCwic3ViIjoiMSIsInVzZXJuYW1lIjoidml0aHVyc2hhbmEgIiwiaXNfYWRtaW4iOmZhbHNlfQ.4_sR_CwOQWIr4J9T_g1gXB0TbWJQ_OUvChxU3a_Nrxc", // replace with your actual token
+      "device_id": "DEVICE0000001",
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        print("Mode command sent successfully: $mode");
+      } else {
+        print("Failed to send mode command. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error sending mode command: $e");
+    }
+  }
   /// Fetch bike location from API
   Future<void> _fetchBikeLocation() async {
-    final url = Uri.parse("http://192.168.8.146/telemetry/latest/BIKE000000");
+    final url = Uri.parse("http://$serverIp/telemetry/latest/DEVICE0000001");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -540,7 +652,7 @@ class _BikestatusState extends State<Bikestatus> {
 
   /// Fetch bike health from API
   Future<void> _fetchBikeHealth() async {
-    final url = Uri.parse("http://192.168.8.146/device_health/BIKE000000/latest");
+    final url = Uri.parse("http://$serverIp/device_health/BIKE000000/latest");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

@@ -2,6 +2,7 @@ import 'package:computer_engineering_project/users/ParkingHistoryScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
+import 'package:geolocator/geolocator.dart';
 
 class Parkingslotscreen extends StatefulWidget {
   const Parkingslotscreen({super.key});
@@ -11,19 +12,14 @@ class Parkingslotscreen extends StatefulWidget {
 }
 
 class _ParkingslotscreenState extends State<Parkingslotscreen> {
-  static const LatLng _boralesgamuwa = LatLng(6.8320, 79.8913);
+  LatLng? _currentLocation;
 
   final List<LatLng> _parkingSlots = [
     LatLng(6.8400, 79.8910),
     LatLng(6.8522, 79.8862),
   ];
 
-  static const _initialCameraPosition = CameraPosition(
-    target: _boralesgamuwa,
-    zoom: 13.0,
-  );
-
-  late GoogleMapController _googleMapController;
+  GoogleMapController? _googleMapController;
   Set<Polyline> _polylines = {};
 
   LatLng? _selectedParkingSlot;
@@ -32,6 +28,51 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
 
   bool _isCheckedIn = false;
   DateTime? _checkInTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentLocation();
+  }
+
+  Future<void> _fetchCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Location services are disabled.")),
+      );
+      return;
+    }
+
+    // Check permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Location permissions are denied.")),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Location permissions are permanently denied.")),
+      );
+      return;
+    }
+
+    // Get current location
+    final Position position = await Geolocator.getCurrentPosition();
+    setState(() {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+    });
+  }
 
   double _calculateDistance(LatLng start, LatLng end) {
     const R = 6371;
@@ -101,8 +142,14 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_currentLocation == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final slot = _selectedParkingSlot ?? _parkingSlots.first;
-    final distanceKm = _calculateDistance(_boralesgamuwa, slot);
+    final distanceKm = _calculateDistance(_currentLocation!, slot);
     final durationMin = (distanceKm / 40 * 60).round();
     final price = (distanceKm * 50).round();
 
@@ -114,7 +161,7 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
           IconButton(
             icon: const Icon(Icons.history, color: Colors.white),
             onPressed: () {
-              Navigator.push(context,MaterialPageRoute(builder: (context)=> Parkinghistoryscreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Parkinghistoryscreen()));
             },
           ),
         ],
@@ -123,14 +170,15 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
         children: [
           Expanded(
             child: GoogleMap(
-              myLocationButtonEnabled: false,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
               zoomControlsEnabled: false,
-              initialCameraPosition: _initialCameraPosition,
+              initialCameraPosition: CameraPosition(target: _currentLocation!, zoom: 13.0),
               onMapCreated: (controller) => _googleMapController = controller,
               markers: {
                 Marker(
                   markerId: const MarkerId("current_location"),
-                  position: _boralesgamuwa,
+                  position: _currentLocation!,
                   infoWindow: const InfoWindow(title: "You are here"),
                   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
                 ),
@@ -185,16 +233,16 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   onPressed: () {
-                    _googleMapController.animateCamera(
+                    _googleMapController?.animateCamera(
                       CameraUpdate.newLatLngBounds(
                         LatLngBounds(
                           southwest: LatLng(
-                            min(_boralesgamuwa.latitude, slot.latitude),
-                            min(_boralesgamuwa.longitude, slot.longitude),
+                            min(_currentLocation!.latitude, slot.latitude),
+                            min(_currentLocation!.longitude, slot.longitude),
                           ),
                           northeast: LatLng(
-                            max(_boralesgamuwa.latitude, slot.latitude),
-                            max(_boralesgamuwa.longitude, slot.longitude),
+                            max(_currentLocation!.latitude, slot.latitude),
+                            max(_currentLocation!.longitude, slot.longitude),
                           ),
                         ),
                         100,
@@ -220,7 +268,7 @@ class _ParkingslotscreenState extends State<Parkingslotscreen> {
                             polylineId: const PolylineId("route"),
                             color: Colors.blue,
                             width: 5,
-                            points: [_boralesgamuwa, _reservedSlot!],
+                            points: [_currentLocation!, _reservedSlot!],
                           ));
                         });
                       }

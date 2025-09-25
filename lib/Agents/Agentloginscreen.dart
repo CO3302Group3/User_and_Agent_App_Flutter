@@ -1,3 +1,4 @@
+import 'package:computer_engineering_project/Agents/AgentDashboard.dart';
 import 'package:computer_engineering_project/Agents/Agentbottomnavigationbar.dart';
 import 'package:computer_engineering_project/users/Signupscreen.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
@@ -131,7 +132,7 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
                 width: 200, // Set your desired width here
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Agentbottomnavigationbar()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Agentdashboard()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[900],
@@ -161,14 +162,14 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
                 ),
                   SizedBox(width: 10.0),
                   ElevatedButton(
-
-                    onPressed: loginUser,
-                    child: Text(
-                      "Sign up ",
-                      style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
-                    ),
-
-                  )
+                  onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Signupscreen()));
+                  },
+                  child: Text(
+                    "Sign up ",
+                    style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
+                  ),
+                  ),
                 ]
             ),
 
@@ -182,47 +183,34 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
       ),
     );
   }
-
-
-  Future<void> loginUser() async {
-    final url = Uri.parse('http://10.0.2.2/auth/login'); // For Android emulator
-
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter both email and password")),
-      );
-      return;
-    }
-
+  Future<String?> agentloginuser(String baseURL, String password, String email) async {
     try {
+      final String basicauth = 'Basic ' + base64Encode(utf8.encode('$email:$password'));
+
       final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        }),
+        Uri.parse('http://$baseURL/auth/login'),
+        headers: <String, String>{
+          'authorization': basicauth,
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
       );
 
       if (response.statusCode == 200) {
-        print("Login successful");
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Bottomnavigationbar()),
-        );
+        final data = jsonDecode(response.body);
+        print('Login response: $data');
+        return data['data']['access_token'];
       } else {
-        print("Login failed: ${response.body}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Invalid email or password")),
-        );
+        print("Login failed: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        return null;
       }
     } catch (e) {
-      print("Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("An error occurred. Please try again.")),
-      );
+      print("Login error: $e");
+      rethrow;
     }
   }
+
+
 }
 
 
