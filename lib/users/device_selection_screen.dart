@@ -128,7 +128,7 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Device'),
+        title: Text('Select Device', style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.indigo.shade800,
         actions: [
           IconButton(
