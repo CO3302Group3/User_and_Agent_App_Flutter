@@ -4,8 +4,8 @@ import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../services/configurations.dart';
 import '../services/token_storage_fallback.dart';
+import '../main.dart' as main;
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -17,6 +17,22 @@ class Loginscreen extends StatefulWidget {
 class _LoginscreenState extends State<Loginscreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _ipController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize IP field with current appConfig baseURL
+    _ipController.text = main.appConfig.baseURL;
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _ipController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -164,6 +180,7 @@ class _LoginscreenState extends State<Loginscreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child:  TextField(
+                        controller: _ipController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Enter your IP address",
@@ -188,16 +205,40 @@ class _LoginscreenState extends State<Loginscreen> {
                   onPressed: () async {
                     final email = _emailController.text.trim();
                     final password = _passwordController.text.trim();
+                    final ipAddress = _ipController.text.trim();
+                    
+                    // Update appConfig with user-provided IP first (before validation)
+                    if (ipAddress.isNotEmpty && ipAddress != main.appConfig.baseURL) {
+                      // Basic IP validation (accepts both IP addresses and hostnames)
+                      if (_isValidIPOrHostname(ipAddress)) {
+                        main.appConfig.updateBaseURL(ipAddress);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Server IP updated to: $ipAddress'),
+                            backgroundColor: Colors.blue,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a valid IP address or hostname'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+                    }
                     
                     if (email.isEmpty || password.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please fill in all fields')),
+                        const SnackBar(content: Text('Please fill in email and password')),
                       );
                       return;
                     }
 
                     try {
-                      final token = await loginuser(AppConfig.baseURL, password, email);
+                      final token = await loginuser(main.appConfig.baseURL, password, email);
                       if (token != null) {
                         // Save the token for future use
                         await TokenStorageFallback.saveToken(token);
@@ -323,7 +364,27 @@ class _LoginscreenState extends State<Loginscreen> {
     }
   }
 
-
-
+  // Simple validation for IP address or hostname
+  bool _isValidIPOrHostname(String input) {
+    if (input.isEmpty) return false;
+    
+    // Check if it's a valid IP address (basic regex)
+    RegExp ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+    if (ipRegex.hasMatch(input)) {
+      // Validate IP octets are between 0-255
+      List<String> parts = input.split('.');
+      for (String part in parts) {
+        int? num = int.tryParse(part);
+        if (num == null || num < 0 || num > 255) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    // Check if it's a valid hostname (basic validation)
+    RegExp hostnameRegex = RegExp(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$');
+    return hostnameRegex.hasMatch(input) || input == 'localhost';
+  }
 }
 

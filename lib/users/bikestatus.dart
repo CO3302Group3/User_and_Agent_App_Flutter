@@ -6,9 +6,12 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'device_list_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../services/configurations.dart';
 
 class Bikestatus extends StatefulWidget {
+  final Map<String, dynamic>? device;
+
+  const Bikestatus({this.device, super.key});
+
   @override
   State<Bikestatus> createState() => _BikestatusState();
 }
@@ -24,6 +27,10 @@ class _BikestatusState extends State<Bikestatus> {
   double batteryLevel = 0.0;
   String heartbeatStatus = "Inactive";
   String bikeMode = "lock";
+
+  // Get device ID from the selected device
+  String get deviceId => widget.device?['device_id'] ?? widget.device?['id'] ?? 'DEVICE0000001';
+  String get bikeId => widget.device?['bike_id'] ?? widget.device?['device_id'] ?? widget.device?['id'] ?? 'BIKE000000';
 
   // Initial map position
   static const _initialCameraPosition = CameraPosition(
@@ -71,6 +78,8 @@ class _BikestatusState extends State<Bikestatus> {
   @override
   void initState() {
     super.initState();
+    debugPrint('Bikestatus: Initializing with device: ${widget.device}');
+    debugPrint('Bikestatus: Using deviceId: $deviceId, bikeId: $bikeId');
     _fetchBikeLocation();
     _fetchBikeHealth();
   }
@@ -593,13 +602,13 @@ class _BikestatusState extends State<Bikestatus> {
     }
   }
   Future<void> _sendModeCommand(String mode) async {
-    final url = Uri.parse("http://$serverIp/device_command/add_command");
+    final url = Uri.parse("http://${appConfig.baseURL}/device_command/add_command");
 
     final body = json.encode({
-      "command_type": "changemode",
-      "parameters": {"mode": mode},
+      "command_type": "CHANGE MODE",
+      "parameters": {"mode": mode.replaceAll(' ', '_').toUpperCase()},
       "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTg4OTYxMTQsImlhdCI6MTc1ODgwOTcxNCwic3ViIjoiMSIsInVzZXJuYW1lIjoidml0aHVyc2hhbmEgIiwiaXNfYWRtaW4iOmZhbHNlfQ.4_sR_CwOQWIr4J9T_g1gXB0TbWJQ_OUvChxU3a_Nrxc", // replace with your actual token
-      "device_id": "DEVICE0000001",
+      "device_id": deviceId,
     });
 
     try {
@@ -620,7 +629,7 @@ class _BikestatusState extends State<Bikestatus> {
   }
   /// Fetch bike location from API
   Future<void> _fetchBikeLocation() async {
-    final url = Uri.parse("http://$serverIp/telemetry/latest/DEVICE0000001");
+    final url = Uri.parse("http://${appConfig.baseURL}/telemetry/latest/$deviceId");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -652,7 +661,7 @@ class _BikestatusState extends State<Bikestatus> {
 
   /// Fetch bike health from API
   Future<void> _fetchBikeHealth() async {
-    final url = Uri.parse("http://$serverIp/device_health/BIKE000000/latest");
+    final url = Uri.parse("http://${appConfig.baseURL}/device_health/$bikeId/latest");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

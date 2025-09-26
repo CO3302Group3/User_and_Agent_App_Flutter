@@ -2,7 +2,7 @@ import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../services/configurations.dart';
+import '../main.dart' as main;
 
 class Agentsignup extends StatefulWidget {
   const Agentsignup({super.key});
@@ -191,7 +191,7 @@ class _AgentsignupState extends State<Agentsignup> {
 
                           try {
                             final response = await createuser(
-                              AppConfig.baseURL,
+                              main.appConfig.baseURL,
                               _usernameController.text,
                               _passwordController.text,
                               _emailController.text,

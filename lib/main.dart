@@ -1,22 +1,14 @@
-import 'package:computer_engineering_project/Agents/Agentbottomnavigationbar.dart';
 import 'package:computer_engineering_project/services/data.dart';
-import 'package:computer_engineering_project/users/Loginscreen.dart';
-import 'package:computer_engineering_project/users/home.dart';
-import 'package:computer_engineering_project/users/Signupscreen.dart';
-import 'package:computer_engineering_project/users/parkingslotscreen.dart';
-import 'package:computer_engineering_project/users/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:computer_engineering_project/services/auth_wrapper.dart';
 import 'package:computer_engineering_project/services/token_storage_fallback.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import '../services/configurations.dart';
+import 'services/configurations.dart';
 
 
-
-String serverIp = AppConfig.baseURL;
+AppConfig appConfig = AppConfig();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

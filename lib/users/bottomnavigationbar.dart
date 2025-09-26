@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:computer_engineering_project/users/bikestatus.dart';
+import 'package:computer_engineering_project/users/device_selection_screen.dart';
 import 'package:computer_engineering_project/users/home.dart';
 import 'package:computer_engineering_project/users/profile.dart';
 import 'package:computer_engineering_project/users/Notifications.dart';
@@ -15,7 +15,7 @@ class Bottomnavigationbar extends StatefulWidget {
 class _BottomnavigationbarState extends State<Bottomnavigationbar> {
   late List<Widget> pages;
   late Home homepage;
-  late Bikestatus bikestatus;
+  late DeviceSelectionScreen deviceSelectionScreen;
   late Notifications notification;
   late Profile profile;
   int currentTabIndex = 0;
@@ -27,10 +27,10 @@ class _BottomnavigationbarState extends State<Bottomnavigationbar> {
   @override
   void initState() {
     homepage = Home();
-    bikestatus = Bikestatus();
+    deviceSelectionScreen = DeviceSelectionScreen();
     notification = Notifications();
     profile = Profile();
-    pages = [homepage, bikestatus, notification, profile];
+    pages = [homepage, deviceSelectionScreen, notification, profile];
     super.initState();
   }
 

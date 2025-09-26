@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'token_storage_fallback.dart';
-import 'configurations.dart';
+import '../main.dart' as main;
 
 class AuthService {
   // Make authenticated HTTP GET request
@@ -13,7 +13,7 @@ class AuthService {
       }
 
       final response = await http.get(
-        Uri.parse('http://${AppConfig.baseURL}$endpoint'),
+        Uri.parse('http://${main.appConfig.baseURL}$endpoint'),
         headers: headers,
       );
 
@@ -36,7 +36,7 @@ class AuthService {
       }
 
       final response = await http.post(
-        Uri.parse('http://${AppConfig.baseURL}$endpoint'),
+        Uri.parse('http://${main.appConfig.baseURL}$endpoint'),
         headers: headers,
         body: jsonEncode(body),
       );
@@ -60,7 +60,7 @@ class AuthService {
       }
 
       final response = await http.put(
-        Uri.parse('http://${AppConfig.baseURL}$endpoint'),
+        Uri.parse('http://${main.appConfig.baseURL}$endpoint'),
         headers: headers,
         body: jsonEncode(body),
       );
@@ -81,7 +81,7 @@ class AuthService {
       }
 
       final response = await http.delete(
-        Uri.parse('http://${AppConfig.baseURL}$endpoint'),
+        Uri.parse('http://${main.appConfig.baseURL}$endpoint'),
         headers: headers,
       );
 
@@ -95,7 +95,7 @@ class AuthService {
   // Check if token is still valid by making a test request
   static Future<bool> isTokenValid() async {
     try {
-      final response = await authenticatedGet(AppConfig.userProfileEndpoint);
+      final response = await authenticatedGet(main.appConfig.userProfileEndpoint);
       return response != null && response.statusCode == 200;
     } catch (e) {
       return false;
