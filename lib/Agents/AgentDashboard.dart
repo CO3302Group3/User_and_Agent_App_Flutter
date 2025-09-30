@@ -13,6 +13,7 @@ class Agentdashboard extends StatelessWidget {
     const int available = 18;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("Agent Dashboard", style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF3F51B5),

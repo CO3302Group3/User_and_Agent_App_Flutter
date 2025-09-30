@@ -16,6 +16,7 @@ class _ManageParkingSlotsScreenState extends State<ManageParkingSlotsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("Manage Parking Slots", style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF3F51B5),

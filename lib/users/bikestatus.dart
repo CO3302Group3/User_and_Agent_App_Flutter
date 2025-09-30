@@ -1,4 +1,5 @@
 import 'package:computer_engineering_project/main.dart';
+import 'package:computer_engineering_project/users/Wifiprovisioningpage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -130,6 +131,13 @@ class _BikestatusState extends State<Bikestatus> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.indigo.shade800,
+        actions: [
+          IconButton(
+              onPressed:(){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> WifiProvisioningPage(device: connectedDevice,)));
+    },
+              icon: Icon(Icons.wifi, color: Colors.white,))
+        ],
       ),
       body: SafeArea(
         child: Container(

@@ -128,7 +128,7 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Device'),
+        title: Text('Select Device', style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.indigo.shade800,
         actions: [
           IconButton(
@@ -137,7 +137,23 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
           ),
         ],
       ),
-      body: isLoading
+      body: Container(
+    width: double.infinity,
+    height: double.infinity,
+    decoration: const BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Color(0xFF3F51B5),
+    Color(0xFFC5CAE9),
+    Color(0xFFE8EAF6),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    ),
+    ),
+
+
+      child: isLoading
           ? Center(child: CircularProgressIndicator())
           : devices.isEmpty
               ? Center(
@@ -156,9 +172,21 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
                   itemCount: devices.length,
                   itemBuilder: (context, index) {
                     final device = devices[index];
-                    return ListTile(
-                      title: Text(device['user_preferred_name'] ?? device['name'] ?? 'Device ${index + 1}'),
-                      subtitle: Text(device['device_id'] ?? device['id'] ?? 'Unknown ID'),
+                    return Container(
+                        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 25), // spacing between tiles
+                    decoration: BoxDecoration(
+                    color: Colors.indigo.shade900.withOpacity(0.4), // light blue with transparency
+                    borderRadius: BorderRadius.circular(12), // rounded corners
+                    ),
+                    child: ListTile(
+                    title: Text(
+                    device['user_preferred_name'] ?? device['name'] ?? 'Device ${index + 1}',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                    device['device_id'] ?? device['id'] ?? 'Unknown ID',
+                    style: TextStyle(color: Colors.white),
+                    ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -167,9 +195,11 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
                           ),
                         );
                       },
+                    )
                     );
                   },
                 ),
+      ),
     );
   }
 }

@@ -319,7 +319,11 @@ class _DeviceListPageState extends State<DeviceListPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF3F51B5), Color(0xFFC5CAE9), Color(0xFFE8EAF6)],
+            colors: [
+              Color(0xFF3F51B5),
+              Color(0xFFC5CAE9),
+              Color(0xFFE8EAF6),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
