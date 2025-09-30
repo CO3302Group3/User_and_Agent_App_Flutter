@@ -73,6 +73,33 @@ class _BikestatusState extends State<Bikestatus> {
     }
   }
 
+  // Helper function to map mode numbers to names
+  String _getModeName(int modeNumber) {
+    switch (modeNumber) {
+      case -1:
+        return "NUL";
+      case 0:
+        return "TEST";
+      case 1:
+        return "THEFT_ATTEMPT";
+      case 2:
+        return "DEEP_SLEEP";
+      case 3:
+        return "TRACKING";
+      case 4:
+        return "RIDE";
+      case 5:
+        return "LOCK";
+      default:
+        return "UNKNOWN";
+    }
+  }
+
+  // Helper function to map heartbeat number to status
+  String _getHeartbeatStatus(int heartbeatNumber) {
+    return heartbeatNumber == 1 ? "Active" : "Inactive";
+  }
+
   Set<Marker> _markers = {};
 
   @override
@@ -670,8 +697,8 @@ class _BikestatusState extends State<Bikestatus> {
 
         setState(() {
           batteryLevel = (health['battery'] ?? 0.0).toDouble();
-          heartbeatStatus = health['heartbeat'] ?? "Inactive";
-          bikeMode = health['mode'] ?? "lock";
+          heartbeatStatus = _getHeartbeatStatus(health['heartbeat'] ?? 0);
+          bikeMode = _getModeName(health['mode'] ?? 5);
           isRideMode = (bikeMode.toLowerCase() == "ride");
         });
       } else {
