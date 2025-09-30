@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart' as fbp;
+
+import 'package:computer_engineering_project/services/esp32_provisioning_service.dart';
 
 class DeviceListPage extends StatefulWidget {
   @override
@@ -8,224 +9,96 @@ class DeviceListPage extends StatefulWidget {
 }
 
 class _DeviceListPageState extends State<DeviceListPage> {
-  List<ScanResult> devices = [];
-  Map<String, String> realNames = {}; // Store real names after connecting
+  final Esp32ProvisioningService _service = Esp32ProvisioningService();
+  List<fbp.ScanResult> devices = [];
   bool isScanning = false;
-  var subscription;
 
   @override
   void initState() {
     super.initState();
+    _service.addListener(_onServiceStateChange);
     startScanning();
   }
 
   @override
   void dispose() {
-    stopScanning();
+    _service.removeListener(_onServiceStateChange);
+    _service.stopScan();
     super.dispose();
   }
 
+  void _onServiceStateChange() {
+    if (!mounted) return;
+    setState(() {
+      isScanning = _service.isScanning;
+    });
+  }
+
   Future<void> startScanning() async {
-    try {
-      setState(() {
-        isScanning = true;
-        devices.clear();
-        realNames.clear();
-      });
+    setState(() {
+      devices.clear();
+    });
 
-      if (!await FlutterBluePlus.isSupported) {
-        print("Bluetooth not supported by this device");
-        return;
-      }
+    final results = await _service.scanForProvisioningDevices(timeout: const Duration(seconds: 18));
 
-      await [
-        Permission.bluetooth,
-        Permission.bluetoothConnect,
-        Permission.bluetoothScan,
-        Permission.location,
-        Permission.locationWhenInUse,
-      ].request();
-
-      var bluetoothState = await FlutterBluePlus.adapterState.first;
-      if (bluetoothState != BluetoothAdapterState.on) {
-        print("Bluetooth is not turned on");
-        return;
-      }
-
-      await FlutterBluePlus.startScan(
-        timeout: Duration(seconds: 30),
-        continuousUpdates: true,
-      );
-
-      subscription = FlutterBluePlus.scanResults.listen((results) {
-        for (ScanResult result in results) {
-          int existingIndex = devices.indexWhere(
-                  (existing) => existing.device.remoteId == result.device.remoteId);
-          if (existingIndex != -1) {
-            devices[existingIndex] = result;
-          } else {
-            devices.add(result);
-            // Fetch real name asynchronously for every device safely
-            Future.microtask(() => tryFetchDeviceName(result.device));
-          }
-        }
-
-        setState(() {
-          devices.sort((a, b) {
-            bool aIsBike = _isPotentialBike(a);
-            bool bIsBike = _isPotentialBike(b);
-
-            if (aIsBike && !bIsBike) return -1;
-            if (!aIsBike && bIsBike) return 1;
-
-            return b.rssi.compareTo(a.rssi);
-          });
-        });
-      });
-
-      await Future.delayed(Duration(seconds: 30));
-      stopScanning();
-
-    } catch (e) {
-      print("Error in scanning: $e");
-      setState(() {
-        isScanning = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      devices = results;
+    });
   }
 
   void stopScanning() {
-    try {
-      if (FlutterBluePlus.isScanningNow) {
-        FlutterBluePlus.stopScan();
-      }
-      subscription?.cancel();
-      setState(() {
-        isScanning = false;
-      });
-    } catch (e) {
-      print("Error stopping scan: $e");
-    }
+    _service.stopScan();
   }
 
-  bool _isPotentialBike(ScanResult result) {
-    var adv = result.advertisementData;
-    String name = adv.localName.isNotEmpty
-        ? adv.localName
-        : result.device.platformName.isNotEmpty
-        ? result.device.platformName
-        : "";
+  bool _isEsp32Device(fbp.ScanResult result) {
+    final adv = result.advertisementData;
+    final matchingUuid = Esp32ProvisioningService.defaultProvisioningServiceUuid;
 
-    if (name.toLowerCase().contains('bike') ||
-        name.toLowerCase().contains('spinlock') ||
-        name.toLowerCase().contains('lock') ||
-        name.toLowerCase().contains('cycle') ||
-        name.toLowerCase().contains('ebike') ||
-        name.toLowerCase().contains('scooter')) return true;
-
-    for (var serviceUuid in adv.serviceUuids) {
-      String uuid = serviceUuid.toString().toLowerCase();
-      if (uuid.contains('1816') ||
-          uuid.contains('1818') ||
-          uuid.contains('180f') ||
-          uuid.contains('1826')) return true;
+    if (adv.serviceUuids.any((uuid) => uuid.toString().toLowerCase() == matchingUuid)) {
+      return true;
     }
+
+    final name = (adv.localName.isNotEmpty ? adv.localName : result.device.platformName).toLowerCase();
+    if (name.contains('esp') || name.startsWith('prov_') || name.contains('esp32')) {
+      return true;
+    }
+
+    if (adv.manufacturerData.keys.any((id) => id == 0x02e5)) {
+      return true;
+    }
+
     return false;
   }
 
-  String getDeviceDisplayName(ScanResult result) {
-    String id = result.device.id.id;
-
-    // Show real name if already fetched
-    if (realNames.containsKey(id)) return realNames[id]!;
-
-    var adv = result.advertisementData;
-    // Use advertised local name first
+  String getDeviceDisplayName(fbp.ScanResult result) {
+    final adv = result.advertisementData;
     if (adv.localName.isNotEmpty) return adv.localName;
-    // Use platform name next
     if (result.device.platformName.isNotEmpty) return result.device.platformName;
-
-    // Otherwise, unknown
-    return "Unknown Device";
+    return 'ESP32 Device ${result.device.remoteId.str.substring(0, 4)}';
   }
 
-
-  Future<void> tryFetchDeviceName(BluetoothDevice device) async {
-    String id = device.id.id;
-    if (realNames.containsKey(id)) return;
-
-    try {
-      await device.connect(timeout: Duration(seconds: 3), autoConnect: false);
-      List<BluetoothService> services = await device.discoverServices();
-      for (var service in services) {
-        if (service.uuid.toString().toLowerCase().startsWith("0000180a")) {
-          for (var char in service.characteristics) {
-            if (char.uuid.toString().toLowerCase().startsWith("00002a00")) {
-              var value = await char.read();
-              String name = String.fromCharCodes(value);
-              setState(() {
-                realNames[id] = name;
-              });
-              break;
-            }
-          }
-        }
-      }
-      await device.disconnect();
-    } catch (e) {
-      print("Failed to fetch real name for $id: $e");
-      try {
-        await device.disconnect();
-      } catch (_) {}
-    }
-  }
-
-  Future<void> connectToDevice(BluetoothDevice device) async {
+  Future<void> connectToDevice(fbp.BluetoothDevice device) async {
     try {
       stopScanning();
 
-      await device.connect(timeout: Duration(seconds: 10));
-
-      // Fetch real name
-      await fetchRealDeviceName(device);
-
-      // After fetching, the ListView will update
-      setState(() {});
-
-      Navigator.pop(context, {'device': device, 'connected': true});
+      final connected = await _service.connect(device);
+      if (connected) {
+        Navigator.pop(context, {'device': device, 'connected': true});
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to connect to ESP32 provisioning service')),
+        );
+      }
     } catch (e) {
       print("Connection failed: $e");
     }
   }
-  Future<void> fetchRealDeviceName(BluetoothDevice device) async {
-    try {
-      List<BluetoothService> services = await device.discoverServices();
 
-      for (var service in services) {
-        // Device Information Service
-        if (service.uuid.toString().toLowerCase().startsWith("0000180a")) {
-          for (var char in service.characteristics) {
-            // Device Name characteristic
-            if (char.uuid.toString().toLowerCase().startsWith("00002a00")) {
-              var value = await char.read();
-              String name = String.fromCharCodes(value);
-              realNames[device.id.id] = name;
-              return;
-            }
-          }
-        }
-      }
-    } catch (e) {
-      print("Error reading real device name: $e");
-    }
-  }
-
-
-
-  Widget buildDeviceCard(ScanResult result) {
+  Widget buildDeviceCard(fbp.ScanResult result) {
     var adv = result.advertisementData;
     var rssi = result.rssi;
-    bool isBike = _isPotentialBike(result);
+    bool isEsp32 = _isEsp32Device(result);
 
     String deviceName = getDeviceDisplayName(result);
 
@@ -244,13 +117,13 @@ class _DeviceListPageState extends State<DeviceListPage> {
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: isBike ? Colors.green.shade50 : null,
-      elevation: isBike ? 4 : 1,
+      color: isEsp32 ? Colors.green.shade50 : null,
+      elevation: isEsp32 ? 4 : 1,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isBike ? Colors.green.shade100 : Colors.indigo.shade100,
-          child: Icon(isBike ? Icons.pedal_bike : Icons.bluetooth,
-              color: isBike ? Colors.green.shade800 : Colors.indigo.shade800),
+          backgroundColor: isEsp32 ? Colors.green.shade100 : Colors.indigo.shade100,
+          child: Icon(isEsp32 ? Icons.memory : Icons.bluetooth,
+              color: isEsp32 ? Colors.green.shade800 : Colors.indigo.shade800),
         ),
         title: Row(
           children: [
@@ -258,13 +131,13 @@ class _DeviceListPageState extends State<DeviceListPage> {
                 child: Text(deviceName,
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: isBike ? Colors.green.shade800 : null))),
-            if (isBike)
+                        color: isEsp32 ? Colors.green.shade800 : null))),
+            if (isEsp32)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                     color: Colors.green, borderRadius: BorderRadius.circular(10)),
-                child: Text("BIKE",
+                child: Text("ESP32",
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -349,8 +222,8 @@ class _DeviceListPageState extends State<DeviceListPage> {
                       Expanded(
                         child: Text(
                           isScanning
-                              ? "Scanning for devices... (${devices.length} found)"
-                              : "Found ${devices.length} device(s). Tap refresh to scan again\nTap to connect to fetch real name",
+                              ? "Scanning for ESP32 provisioning devices... (${devices.length} found)"
+                              : "Found ${devices.length} ESP32 device(s). Tap refresh to scan again",
                           style: TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ),
@@ -373,7 +246,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
                         TextStyle(fontSize: 18, color: Colors.grey.shade600)),
                     SizedBox(height: 8),
                     Text(
-                        "Make sure your bike is in pairing mode\nand tap refresh to scan again",
+                        "Make sure your ESP32 is advertising provisioning service\nand tap refresh to scan again",
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey.shade600)),
                   ],

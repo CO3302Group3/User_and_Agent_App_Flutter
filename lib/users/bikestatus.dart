@@ -1,6 +1,6 @@
 import 'package:computer_engineering_project/main.dart';
 import 'package:computer_engineering_project/users/Wifiprovisioningpage.dart';
-import 'package:computer_engineering_project/services/bluetooth_service.dart';
+import 'package:computer_engineering_project/services/esp32_provisioning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'device_list_page.dart';
@@ -17,7 +17,7 @@ class Bikestatus extends StatefulWidget {
 }
 
 class _BikestatusState extends State<Bikestatus> {
-  late BikeBluetoothService _bluetoothService;
+  late Esp32ProvisioningService _bleService;
   bool isRideMode = false;
   GoogleMapController? _mapController;
 
@@ -112,8 +112,8 @@ class _BikestatusState extends State<Bikestatus> {
     super.initState();
     debugPrint('Bikestatus: Initializing with device: ${widget.device}');
     debugPrint('Bikestatus: Using deviceId: $deviceId, bikeId: $bikeId');
-    _bluetoothService = BikeBluetoothService();
-    _bluetoothService.addListener(_onBluetoothStateChange);
+  _bleService = Esp32ProvisioningService();
+  _bleService.addListener(_onBluetoothStateChange);
     _fetchBikeLocation();
     _fetchBikeHealth();
   }
@@ -121,8 +121,8 @@ class _BikestatusState extends State<Bikestatus> {
   @override
   void dispose() {
     // Remove listener and disconnect from device if connected
-    _bluetoothService.removeListener(_onBluetoothStateChange);
-    _bluetoothService.disconnectDevice();
+  _bleService.removeListener(_onBluetoothStateChange);
+  _bleService.disconnect();
     _mapController?.dispose();
     super.dispose();
   }
@@ -139,7 +139,7 @@ class _BikestatusState extends State<Bikestatus> {
         actions: [
           IconButton(
               onPressed:(){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> WifiProvisioningPage(device: _bluetoothService.connectedDevice,)));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> WifiProvisioningPage(device: _bleService.connectedDevice,)));
     },
               icon: Icon(Icons.wifi, color: Colors.white,))
         ],
@@ -176,25 +176,25 @@ class _BikestatusState extends State<Bikestatus> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          _bluetoothService.isBluetoothConnected
-                              ? "Connected to ${_bluetoothService.connectedDevice?.platformName ?? 'Device'}"
+              _bleService.isConnected
+                ? "Connected to ${_bleService.connectedDevice?.platformName ?? 'ESP32'}"
                               : "Tap to Pair with Bike",
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                       TextButton(
-                        onPressed: _bluetoothService.isScanning ? null : () async {
-                          if (_bluetoothService.isBluetoothConnected) {
+                        onPressed: _bleService.isScanning ? null : () async {
+                          if (_bleService.isConnected) {
                             // Disconnect from current device
                             try {
-                              await _bluetoothService.disconnectDevice();
+                              await _bleService.disconnect();
                               print("Disconnected from device");
                             } catch (e) {
                               print("Error disconnecting: $e");
                             }
                           } else {
                             // Try auto-connect to bike
-                            final device = await _bluetoothService.autoConnectToBike();
+                            final device = await _bleService.autoConnect();
                             if (device != null) {
                               print("Auto-connected to bike: ${device.platformName}");
                             } else {
@@ -206,18 +206,18 @@ class _BikestatusState extends State<Bikestatus> {
 
                               // Handle the result from device list page
                               if (result != null && result['connected'] == true) {
-                                await _bluetoothService.connectToDevice(result['device']);
+                                await _bleService.connect(result['device']);
                               }
                             }
                           }
                         },
-                        child: _bluetoothService.isScanning
+                        child: _bleService.isScanning
                             ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                            : Text(_bluetoothService.isBluetoothConnected ? "Disconnect" : "Pair"),
+                            : Text(_bleService.isConnected ? "Disconnect" : "Pair"),
                       ),
                     ],
                   ),
