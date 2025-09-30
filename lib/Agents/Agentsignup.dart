@@ -1,3 +1,4 @@
+import 'package:computer_engineering_project/Agents/Agentloginscreen.dart';
 import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -20,6 +21,7 @@ class _AgentsignupState extends State<Agentsignup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
@@ -206,7 +208,7 @@ class _AgentsignupState extends State<Agentsignup> {
                               );
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => Loginscreen()),
+                                MaterialPageRoute(builder: (context) => Agentloginscreen()),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(

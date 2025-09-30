@@ -19,6 +19,7 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -30,6 +31,7 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
             end: Alignment.bottomRight,
           ),
         ),
+
         child: Column(
           children: [
             Container(
@@ -181,6 +183,7 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
         ),
 
       ),
+
     );
   }
   Future<String?> agentloginuser(String baseURL, String password, String email) async {

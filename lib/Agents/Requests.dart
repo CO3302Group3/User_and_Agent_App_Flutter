@@ -278,6 +278,7 @@ class _RequestsState extends State<Requests> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("Requests", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.indigo,

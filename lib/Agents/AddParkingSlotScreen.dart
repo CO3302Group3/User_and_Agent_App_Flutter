@@ -100,6 +100,7 @@ class _AddParkingSlotScreenState extends State<AddParkingSlotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text("Add Parking Slot", style: TextStyle(color: Colors.white)),

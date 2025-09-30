@@ -16,6 +16,7 @@ class _AgentnotificationsState extends State<Agentnotifications> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text(
           "Notification",
