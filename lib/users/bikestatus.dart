@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'device_list_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/token_storage_fallback.dart';
 
 class Bikestatus extends StatefulWidget {
   final Map<String, dynamic>? device;
@@ -20,6 +21,7 @@ class _BikestatusState extends State<Bikestatus> {
   late Esp32ProvisioningService _bleService;
   bool isRideMode = false;
   GoogleMapController? _mapController;
+  LatLng? _latestBikePosition;
 
   double batteryLevel = 0.0;
   String heartbeatStatus = "Inactive";
@@ -238,6 +240,11 @@ class _BikestatusState extends State<Bikestatus> {
                       markers: _markers,
                       onMapCreated: (controller) {
                         _mapController = controller;
+                        if (_latestBikePosition != null) {
+                          controller.moveCamera(
+                            CameraUpdate.newLatLngZoom(_latestBikePosition!, 16),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -453,10 +460,12 @@ class _BikestatusState extends State<Bikestatus> {
   Future<void> _sendModeCommand(String mode) async {
     final url = Uri.parse("http://${appConfig.baseURL}/device_command/add_command");
 
+    String? token = await TokenStorageFallback.getToken();
+
     final body = json.encode({
       "command_type": "CHANGE MODE",
       "parameters": {"mode": mode.replaceAll(' ', '_').toUpperCase()},
-      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTg4OTYxMTQsImlhdCI6MTc1ODgwOTcxNCwic3ViIjoiMSIsInVzZXJuYW1lIjoidml0aHVyc2hhbmEgIiwiaXNfYWRtaW4iOmZhbHNlfQ.4_sR_CwOQWIr4J9T_g1gXB0TbWJQ_OUvChxU3a_Nrxc", // replace with your actual token
+      "token": token,
       "device_id": deviceId,
     });
 
@@ -484,28 +493,52 @@ class _BikestatusState extends State<Bikestatus> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final telemetry = data['telemetry'];
-        double latitude = telemetry['lat'] ?? 0.0;
-        double longitude = telemetry['long'] ?? 0.0;
+        final latitude = _parseCoordinate(telemetry, ['lat', 'latitude', 'Latitude']);
+        final longitude = _parseCoordinate(telemetry, ['long', 'lng', 'longitude', 'Longitude']);
 
-        setState(() {
-          _markers = {
-            Marker(
-              markerId: MarkerId("bike"),
-              position: LatLng(latitude, longitude),
-              infoWindow: InfoWindow(title: "Bike Location"),
-            ),
-          };
+        if (latitude != null && longitude != null) {
+          final position = LatLng(latitude, longitude);
+          print("Longitude: $longitude, Latitude: $latitude");
 
-          _mapController?.animateCamera(
-            CameraUpdate.newLatLngZoom(LatLng(latitude, longitude), 16),
-          );
-        });
+          setState(() {
+            _latestBikePosition = position;
+            _markers = {
+              Marker(
+                markerId: const MarkerId("bike"),
+                position: position,
+                infoWindow: const InfoWindow(title: "Bike Location"),
+              ),
+            };
+          });
+
+          if (_mapController != null) {
+            _mapController!.animateCamera(
+              CameraUpdate.newLatLngZoom(position, 16),
+            );
+          }
+        } else {
+          debugPrint('Telemetry missing latitude/longitude: $telemetry');
+        }
       } else {
         print("Error: ${response.statusCode}");
       }
     } catch (e) {
       print("Error fetching bike location: $e");
     }
+  }
+
+  double? _parseCoordinate(Map<String, dynamic>? source, List<String> keys) {
+    if (source == null) return null;
+    for (final key in keys) {
+      if (!source.containsKey(key)) continue;
+      final value = source[key];
+      if (value is num) return value.toDouble();
+      if (value is String) {
+        final parsed = double.tryParse(value);
+        if (parsed != null) return parsed;
+      }
+    }
+    return null;
   }
 
   /// Fetch bike health from API

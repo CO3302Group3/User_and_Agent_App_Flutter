@@ -261,7 +261,7 @@ class _AgentsignupState extends State<Agentsignup> {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{'username': username, 'password': password , 'email':email}),
+      body: jsonEncode(<String, String>{'username': username, 'password': password , 'email':email, 'user_type': 'agent'}),
     );
   }
 

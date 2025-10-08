@@ -4,6 +4,7 @@ import 'package:computer_engineering_project/users/Loginscreen.dart';
 import 'package:computer_engineering_project/users/Rating_Feedback.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../main.dart' as main;
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -16,6 +17,20 @@ class _ProfileState extends State<Profile> {
   bool isNotificationOn = true;
   int rating = 0;
   final TextEditingController feedbackController = TextEditingController();
+  late final TextEditingController _ipController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ipController = TextEditingController(text: main.appConfig.baseURL);
+  }
+
+  @override
+  void dispose() {
+    feedbackController.dispose();
+    _ipController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -337,7 +352,45 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20), // Add bottom padding
+              const SizedBox(height: 10), // Add bottom padding
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _ipController,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: 'IP Address',
+                          hintText: main.appConfig.baseURL,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        final newBaseUrl = _ipController.text.trim();
+                        if (newBaseUrl.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Enter a valid IP address')),
+                          );
+                          return;
+                        }
+                        FocusScope.of(context).unfocus();
+                        setState(() {
+                          main.appConfig.baseURL = newBaseUrl;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Base URL set to $newBaseUrl')),
+                        );
+                      },
+                      child: const Text('Save'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
             ],
           ),
         ),
