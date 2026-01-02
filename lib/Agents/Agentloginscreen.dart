@@ -1,10 +1,13 @@
 import 'package:computer_engineering_project/Agents/AgentDashboard.dart';
 import 'package:computer_engineering_project/Agents/Agentbottomnavigationbar.dart';
+import 'package:computer_engineering_project/Agents/Agentsignup.dart';
 import 'package:computer_engineering_project/users/Signupscreen.dart';
 import 'package:computer_engineering_project/users/bottomnavigationbar.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/token_storage_fallback.dart';
+import '../main.dart' as main;
 
 class Agentloginscreen extends StatefulWidget {
   const Agentloginscreen({super.key});
@@ -16,6 +19,23 @@ class Agentloginscreen extends StatefulWidget {
 class _AgentloginscreenState extends State<Agentloginscreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _ipController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize IP field with current appConfig baseURL
+    _ipController.text = main.appConfig.baseURL;
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _ipController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,154 +52,262 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
           ),
         ),
 
-        child: Column(
-          children: [
-            Container(
-
-
-              width: MediaQuery.of(context).size.width,
-              child: Image.asset(
-                "assets/images/spinlock.jpg",
-                fit: BoxFit.cover,
-              ),
-
-
+        child: SingleChildScrollView( // Added SingleChildScrollView to avoid overflow
+          child: ConstrainedBox( // Added ConstrainedBox to ensure minimum height
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
             ),
-            SizedBox(height: 30.0,),
+            child: Column(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: Image.asset(
+                    "assets/images/spinlock.jpg",
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                SizedBox(height: 30.0,),
 
-            SizedBox(height: 10.0,),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Align "Name" to the left
-                  mainAxisSize: MainAxisSize.min, // Avoid full height
-                  children: [
-                    const Text(
-                      "Email",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8), // Space between text and container
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      decoration: BoxDecoration(
-                        color: Colors.indigo.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child:  TextField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Enter your email",
-                          hintStyle: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 18.0,
+                SizedBox(height: 10.0,),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // Align "Name" to the left
+                      mainAxisSize: MainAxisSize.min, // Avoid full height
+                      children: [
+                        const Text(
+                          "Email",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10.0,),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Align "Name" to the left
-                  mainAxisSize: MainAxisSize.min, // Avoid full height
-                  children: [
-                    const Text(
-                      "Password",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8), // Space between text and container
+                        const SizedBox(height: 8), // Space between text and container
 
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      decoration: BoxDecoration(
-                        color: Colors.indigo.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child:  TextField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Enter your password",
-                          hintStyle: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 18.0,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          decoration: BoxDecoration(
+                            color: Colors.indigo.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child:  TextField(
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Enter your email",
+                              hintStyle: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 18.0,
+                              ),
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.0,),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // Align "Name" to the left
+                      mainAxisSize: MainAxisSize.min, // Avoid full height
+                      children: [
+                        const Text(
+                          "Password",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8), // Space between text and container
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          decoration: BoxDecoration(
+                            color: Colors.indigo.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child:  TextField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Enter your password",
+                              hintStyle: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 18.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.0,),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // Align "Name" to the left
+                      mainAxisSize: MainAxisSize.min, // Avoid full height
+                      children: [
+                        const Text(
+                          "IP address",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8), // Space between text and container
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          decoration: BoxDecoration(
+                            color: Colors.indigo.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child:  TextField(
+                            controller: _ipController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Enter your IP address",
+                              hintStyle: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 18.0,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25.0,),
+                Center(
+                  child: SizedBox(
+                    width: 200, // Set your desired width here
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final email = _emailController.text.trim();
+                        final password = _passwordController.text.trim();
+                        final ipAddress = _ipController.text.trim();
+
+                        // Update appConfig with user-provided IP first (before validation)
+                        if (ipAddress.isNotEmpty && ipAddress != main.appConfig.baseURL) {
+                          // Basic IP validation (accepts both IP addresses and hostnames)
+                          if (_isValidIPOrHostname(ipAddress)) {
+                            main.appConfig.updateBaseURL(ipAddress);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Server IP updated to: $ipAddress'),
+                                backgroundColor: Colors.blue,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter a valid IP address or hostname'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        if (email.isEmpty || password.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please fill in email and password')),
+                          );
+                          return;
+                        }
+
+                        try {
+                          final token = await agentloginuser(main.appConfig.baseURL, password, email);
+                          if (token != null) {
+                            // Save the token for future use
+                            await TokenStorageFallback.saveToken(token);
+                            await TokenStorageFallback.saveUserInfo(email: email);
+
+                            print("Login successful: $token");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Login successful!')),
+                            );
+
+                            // Navigate to the next screen
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => Agentbottomnavigationbar())
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Login failed. Please check your credentials.')),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo[900],
+                        minimumSize: const Size.fromHeight(50), // Only height is fixed
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
+                      child: const Text(
+                        "Log in",
+
+                        style: TextStyle(fontSize: 18,color: Colors.white),
+                      ),
+
                     ),
-                  ],
-                ),
-              ),
-            ),
 
-            const SizedBox(height: 25.0,),
-            Center(
-              child: SizedBox(
-                width: 200, // Set your desired width here
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Agentbottomnavigationbar()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo[900],
-                    minimumSize: const Size.fromHeight(50), // Only height is fixed
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+
+                SizedBox(height: 20,),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children:[ Text(
+                      "Don't have an account?",
+                      style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+
                     ),
-                  ),
-                  child: const Text(
-                    "Log in",
-
-                    style: TextStyle(fontSize: 18,color: Colors.white),
-                  ),
-
+                      SizedBox(width: 10.0),
+                      ElevatedButton(
+                        onPressed: (){
+                          final ipAddress = _ipController.text.trim();
+                          if (ipAddress.isNotEmpty && _isValidIPOrHostname(ipAddress)) {
+                             main.appConfig.updateBaseURL(ipAddress);
+                          }
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Agentsignup()));
+                        },
+                        child: Text(
+                          "Sign up ",
+                          style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ]
                 ),
 
-              ),
+
+
+
+              ],
+
             ),
-
-            SizedBox(height: 20,),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:[ Text(
-                  "Don't have an account?",
-                  style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
-
-                ),
-                  SizedBox(width: 10.0),
-                  ElevatedButton(
-                  onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> Signupscreen()));
-                  },
-                  child: Text(
-                    "Sign up ",
-                    style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.bold),
-                  ),
-                  ),
-                ]
-            ),
-
-
-
-
-          ],
-
+          ),
         ),
 
       ),
@@ -196,6 +324,9 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
           'authorization': basicauth,
           'Content-Type': 'application/json; charset=UTF-8',
         },
+        body: jsonEncode(<String, String>{
+          'user_type': 'agent',
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -213,7 +344,28 @@ class _AgentloginscreenState extends State<Agentloginscreen> {
     }
   }
 
+  // Simple validation for IP address or hostname
+  bool _isValidIPOrHostname(String input) {
+    if (input.isEmpty) return false;
 
+    // Check if it's a valid IP address (basic regex)
+    RegExp ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+    if (ipRegex.hasMatch(input)) {
+      // Validate IP octets are between 0-255
+      List<String> parts = input.split('.');
+      for (String part in parts) {
+        int? num = int.tryParse(part);
+        if (num == null || num < 0 || num > 255) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Check if it's a valid hostname (basic validation)
+    RegExp hostnameRegex = RegExp(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$');
+    return hostnameRegex.hasMatch(input) || input == 'localhost';
+  }
 }
 
 

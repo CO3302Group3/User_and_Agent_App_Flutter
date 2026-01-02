@@ -1,4 +1,5 @@
 import 'package:computer_engineering_project/main.dart';
+import 'package:computer_engineering_project/services/token_storage_fallback.dart';
 import 'package:computer_engineering_project/users/Wifiprovisioningpage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -611,11 +612,11 @@ class _BikestatusState extends State<Bikestatus> {
   }
   Future<void> _sendModeCommand(String mode) async {
     final url = Uri.parse("http://${appConfig.baseURL}/device_command/add_command");
-
+    String? token = await TokenStorageFallback.getToken();
     final body = json.encode({
       "command_type": "CHANGE MODE",
       "parameters": {"mode": mode.replaceAll(' ', '_').toUpperCase()},
-      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTg4OTYxMTQsImlhdCI6MTc1ODgwOTcxNCwic3ViIjoiMSIsInVzZXJuYW1lIjoidml0aHVyc2hhbmEgIiwiaXNfYWRtaW4iOmZhbHNlfQ.4_sR_CwOQWIr4J9T_g1gXB0TbWJQ_OUvChxU3a_Nrxc", // replace with your actual token
+      "token": token,
       "device_id": deviceId,
     });
 
