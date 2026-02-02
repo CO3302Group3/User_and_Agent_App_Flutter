@@ -53,6 +53,7 @@ class _ManageParkingSlotsScreenState extends State<ManageParkingSlotsScreen> {
               bikesAllowed: item['bikes_allowed'] ?? 0,
               totalSpaces: item['total_spaces'] ?? 0,
               assignedDeviceId: item['assigned_device_id'],
+              status: item['status'] ?? 'pending',
             )).toList();
           });
         }
@@ -175,7 +176,23 @@ class _ManageParkingSlotsScreenState extends State<ManageParkingSlotsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(slot.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Row(
+                          children: [
+                            Text(slot.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: slot.status == 'available' ? Colors.green : Colors.amber,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                slot.status.toUpperCase(),
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 5),
                         Text("📍 ${slot.address}", style: const TextStyle(color: Colors.white)),
                         Text("💸 ${slot.price} LKR/hr", style: const TextStyle(color: Colors.white)),

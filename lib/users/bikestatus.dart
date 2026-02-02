@@ -1,13 +1,13 @@
 import 'package:computer_engineering_project/main.dart';
-import 'package:computer_engineering_project/services/token_storage_fallback.dart';
 import 'package:computer_engineering_project/users/Wifiprovisioningpage.dart';
+import 'package:computer_engineering_project/services/esp32_provisioning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'device_list_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/token_storage_fallback.dart';
+import 'package:computer_engineering_project/users/report_complaint_screen.dart';
 
 class Bikestatus extends StatefulWidget {
   final Map<String, dynamic>? device;
@@ -19,12 +19,10 @@ class Bikestatus extends StatefulWidget {
 }
 
 class _BikestatusState extends State<Bikestatus> {
-  bool isBluetoothConnected = false;
-  bool isScanning = false;
-  BluetoothDevice? connectedDevice;
-  bool _locationEnabled = false;
+  late Esp32ProvisioningService _bleService;
   bool isRideMode = false;
   GoogleMapController? _mapController;
+  LatLng? _latestBikePosition;
 
   double batteryLevel = 0.0;
   String heartbeatStatus = "Inactive";
@@ -75,23 +73,59 @@ class _BikestatusState extends State<Bikestatus> {
     }
   }
 
+  // Helper function to map mode numbers to names
+  String _getModeName(int modeNumber) {
+    switch (modeNumber) {
+      case -1:
+        return "NUL";
+      case 0:
+        return "TEST";
+      case 1:
+        return "THEFT_ATTEMPT";
+      case 2:
+        return "DEEP_SLEEP";
+      case 3:
+        return "TRACKING";
+      case 4:
+        return "RIDE";
+      case 5:
+        return "LOCK";
+      default:
+        return "UNKNOWN";
+    }
+  }
+
+  // Helper function to map heartbeat number to status
+  String _getHeartbeatStatus(int heartbeatNumber) {
+    return heartbeatNumber == 1 ? "Active" : "Inactive";
+  }
+
   Set<Marker> _markers = {};
+
+  void _onBluetoothStateChange() {
+    if (mounted) {
+      setState(() {
+        // UI will rebuild with new bluetooth state
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     debugPrint('Bikestatus: Initializing with device: ${widget.device}');
     debugPrint('Bikestatus: Using deviceId: $deviceId, bikeId: $bikeId');
+  _bleService = Esp32ProvisioningService();
+  _bleService.addListener(_onBluetoothStateChange);
     _fetchBikeLocation();
     _fetchBikeHealth();
   }
 
   @override
   void dispose() {
-    // Disconnect from device if connected
-    if (connectedDevice != null) {
-      connectedDevice!.disconnect();
-    }
+    // Remove listener and disconnect from device if connected
+  _bleService.removeListener(_onBluetoothStateChange);
+  _bleService.disconnect();
     _mapController?.dispose();
     super.dispose();
   }
@@ -108,7 +142,7 @@ class _BikestatusState extends State<Bikestatus> {
         actions: [
           IconButton(
               onPressed:(){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> WifiProvisioningPage(device: connectedDevice,)));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> WifiProvisioningPage(device: _bleService.connectedDevice,)));
     },
               icon: Icon(Icons.wifi, color: Colors.white,))
         ],
@@ -145,64 +179,48 @@ class _BikestatusState extends State<Bikestatus> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          isBluetoothConnected
-                              ? "Connected to ${connectedDevice?.platformName ?? 'Device'}"
+              _bleService.isConnected
+                ? "Connected to ${_bleService.connectedDevice?.platformName ?? 'ESP32'}"
                               : "Tap to Pair with Bike",
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                       TextButton(
-                        onPressed: isScanning ? null : () async {
-                          if (isBluetoothConnected && connectedDevice != null) {
+                        onPressed: _bleService.isScanning ? null : () async {
+                          if (_bleService.isConnected) {
                             // Disconnect from current device
                             try {
-                              await connectedDevice!.disconnect();
-                              setState(() {
-                                isBluetoothConnected = false;
-                                connectedDevice = null;
-                              });
+                              await _bleService.disconnect();
                               print("Disconnected from device");
                             } catch (e) {
                               print("Error disconnecting: $e");
                             }
                           } else {
-                            // Navigate to device list page
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => DeviceListPage()),
-                            );
+                            // Try auto-connect to bike
+                            final device = await _bleService.autoConnect();
+                            if (device != null) {
+                              print("Auto-connected to bike: ${device.platformName}");
+                            } else {
+                              // Navigate to device list page as fallback
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => DeviceListPage()),
+                              );
 
-                            // Handle the result from device list page
-                            if (result != null && result['connected'] == true) {
-                              setState(() {
-                                isBluetoothConnected = true;
-                                connectedDevice = result['device'];
-                              });
-
-                              // Discover services for the connected device
-                              try {
-                                List<BluetoothService> services = await result['device'].discoverServices();
-                                print("Discovered ${services.length} services for ${result['device'].platformName}");
-
-                                for (BluetoothService service in services) {
-                                  print("Service UUID: ${service.uuid}");
-                                  for (BluetoothCharacteristic characteristic in service.characteristics) {
-                                    print("  Characteristic UUID: ${characteristic.uuid}");
-                                  }
-                                }
-                              } catch (e) {
-                                print("Error discovering services: $e");
+                              // Handle the result from device list page
+                              if (result != null && result['connected'] == true) {
+                                await _bleService.connect(result['device']);
                               }
                             }
                           }
                         },
-                        child: isScanning
+                        child: _bleService.isScanning
                             ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                            : Text(isBluetoothConnected ? "Disconnect" : "Pair"),
+                            : Text(_bleService.isConnected ? "Disconnect" : "Pair"),
                       ),
                     ],
                   ),
@@ -223,6 +241,11 @@ class _BikestatusState extends State<Bikestatus> {
                       markers: _markers,
                       onMapCreated: (controller) {
                         _mapController = controller;
+                        if (_latestBikePosition != null) {
+                          controller.moveCamera(
+                            CameraUpdate.newLatLngZoom(_latestBikePosition!, 16),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -307,6 +330,17 @@ class _BikestatusState extends State<Bikestatus> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       // Handle report
+                      // Pass bike context if available
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportComplaintScreen(
+                            prefillData: {
+                              'subject': 'Report for Bike: $bikeId (Device: $deviceId)',
+                            },
+                          ),
+                        ),
+                      );
                     },
                     icon: Icon(Icons.report, color: Colors.white),
                     label: Text(
@@ -434,185 +468,12 @@ class _BikestatusState extends State<Bikestatus> {
     );
   }
 
-  Future<void> connectToDevice(BluetoothDevice device) async {
-    try {
-      print("Attempting to connect to ${device.platformName}");
 
-      // Connect to the device
-      await device.connect(timeout: Duration(seconds: 15));
-      print("Connected to ${device.platformName}");
-
-      // Update UI state
-      setState(() {
-        isBluetoothConnected = true;
-        connectedDevice = device;
-      });
-
-      // Discover services
-      List<BluetoothService> services = await device.discoverServices();
-      print("Discovered ${services.length} services");
-
-      for (BluetoothService service in services) {
-        print("Service UUID: ${service.uuid}");
-        for (BluetoothCharacteristic characteristic in service.characteristics) {
-          print("  Characteristic UUID: ${characteristic.uuid}");
-        }
-      }
-
-    } catch (e) {
-      print("Error connecting to device: $e");
-      setState(() {
-        isBluetoothConnected = false;
-        connectedDevice = null;
-      });
-    }
-  }
-
-  Future<void> connectBLE() async {
-    try {
-      // Check if Bluetooth is supported and enabled
-      if (await FlutterBluePlus.isSupported == false) {
-        print("Bluetooth not supported by this device");
-        return;
-      }
-
-      // Request Bluetooth permissions
-      var bluetoothStatus = await Permission.bluetooth.status;
-      var locationStatus = await Permission.location.status;
-      var bluetoothScanStatus = await Permission.bluetoothScan.status;
-      var bluetoothConnectStatus = await Permission.bluetoothConnect.status;
-
-      print("Current permissions - Bluetooth: $bluetoothStatus, Location: $locationStatus, Scan: $bluetoothScanStatus, Connect: $bluetoothConnectStatus");
-
-      if (bluetoothStatus.isDenied || locationStatus.isDenied ||
-          bluetoothScanStatus.isDenied || bluetoothConnectStatus.isDenied) {
-        // Request permissions
-        Map<Permission, PermissionStatus> statuses = await [
-          Permission.bluetooth,
-          Permission.bluetoothConnect,
-          Permission.bluetoothScan,
-          Permission.location,
-          Permission.locationWhenInUse, // Add this for better location access
-        ].request();
-
-        print("Permission statuses after request: $statuses");
-
-        // Check if essential permissions were granted
-        if (statuses[Permission.bluetoothScan] != PermissionStatus.granted ||
-            statuses[Permission.location] != PermissionStatus.granted) {
-          print("Required permissions not granted for BLE scanning");
-          return;
-        }
-      }
-
-      // Check if Bluetooth is turned on
-      var bluetoothState = await FlutterBluePlus.adapterState.first;
-      print("Bluetooth adapter state: $bluetoothState");
-      if (bluetoothState != BluetoothAdapterState.on) {
-        print("Bluetooth is not turned on");
-        return;
-      }
-
-      print("Starting BLE scan...");
-
-      // Declare subscription variable
-      late var subscription;
-
-      // Start scanning with more aggressive settings
-      await FlutterBluePlus.startScan(
-        timeout: Duration(seconds: 20), // Longer timeout
-        withServices: [], // Scan for all devices
-        withRemoteIds: [], // Empty list to scan for all devices
-        withNames: [], // Empty list to scan for all device names
-        continuousUpdates: true, // Get continuous updates
-        continuousDivisor: 1, // Update frequency
-      );
-
-      // Listen for scan results with immediate processing
-      subscription = FlutterBluePlus.scanResults.listen((results) async {
-        if (results.isNotEmpty) {
-          print("Scan results received: ${results.length} devices found");
-
-          for (ScanResult result in results) {
-            var device = result.device;
-            var rssi = result.rssi;
-            var name = device.platformName.isNotEmpty ? device.platformName : "Unknown Device";
-            var advertisementData = result.advertisementData;
-
-            print('Found device: $name (${device.remoteId}) RSSI: $rssi');
-            print('  Local Name: ${advertisementData.localName}');
-            print('  Manufacturer Data: ${advertisementData.manufacturerData}');
-            print('  Service UUIDs: ${advertisementData.serviceUuids}');
-
-            // More flexible device filtering - you can adjust this based on your bike's characteristics
-            bool isPotentialBike = false;
-
-            // Check by name (case-insensitive)
-            if (name.toLowerCase().contains('bike') ||
-                name.toLowerCase().contains('spinlock') ||
-                name.toLowerCase().contains('lock') ||
-                advertisementData.localName.toLowerCase().contains('bike') ||
-                advertisementData.localName.toLowerCase().contains('spinlock')) {
-              isPotentialBike = true;
-            }
-
-            // You can also check by service UUIDs if you know them
-            // if (advertisementData.serviceUuids.contains('your-bike-service-uuid')) {
-            //   isPotentialBike = true;
-            // }
-
-            // For testing purposes, you might want to try connecting to any device with a strong signal
-            // Uncomment the line below to try connecting to any nearby device (be careful!)
-            // if (rssi > -60) isPotentialBike = true;
-
-            // TEMPORARY: For debugging, let's try to connect to the first device we find
-            // Remove this when you know your bike's name/characteristics
-            if (results.isNotEmpty && isPotentialBike == false && rssi > -70) {
-              print("DEBUG: Attempting to connect to first available device for testing");
-              isPotentialBike = true;
-            }
-
-            if (isPotentialBike) {
-              print("Found potential bike device: $name");
-              // Stop scanning before connecting
-              await FlutterBluePlus.stopScan();
-              subscription.cancel();
-              // Attempt to connect to the bike device
-              await connectToDevice(device);
-              return; // Exit the function after attempting connection
-            }
-          }
-        } else {
-          print("Scan results received: 0 devices found - continuing scan...");
-        }
-      });
-
-      // Wait for scan to complete
-      await Future.delayed(Duration(seconds: 20));
-
-      // Stop scanning if still running
-      if (FlutterBluePlus.isScanningNow) {
-        await FlutterBluePlus.stopScan();
-      }
-      subscription.cancel();
-
-      print("BLE scan completed");
-
-    } catch (e) {
-      print("Error in connectBLE: $e");
-      // Make sure to stop scanning if there's an error
-      try {
-        if (FlutterBluePlus.isScanningNow) {
-          await FlutterBluePlus.stopScan();
-        }
-      } catch (stopError) {
-        print("Error stopping scan: $stopError");
-      }
-    }
-  }
   Future<void> _sendModeCommand(String mode) async {
     final url = Uri.parse("http://${appConfig.baseURL}/device_command/add_command");
+
     String? token = await TokenStorageFallback.getToken();
+
     final body = json.encode({
       "command_type": "CHANGE MODE",
       "parameters": {"mode": mode.replaceAll(' ', '_').toUpperCase()},
@@ -644,28 +505,52 @@ class _BikestatusState extends State<Bikestatus> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final telemetry = data['telemetry'];
-        double latitude = telemetry['lat'] ?? 0.0;
-        double longitude = telemetry['long'] ?? 0.0;
+        final latitude = _parseCoordinate(telemetry, ['lat', 'latitude', 'Latitude']);
+        final longitude = _parseCoordinate(telemetry, ['long', 'lng', 'longitude', 'Longitude']);
 
-        setState(() {
-          _markers = {
-            Marker(
-              markerId: MarkerId("bike"),
-              position: LatLng(latitude, longitude),
-              infoWindow: InfoWindow(title: "Bike Location"),
-            ),
-          };
+        if (latitude != null && longitude != null) {
+          final position = LatLng(latitude, longitude);
+          print("Longitude: $longitude, Latitude: $latitude");
 
-          _mapController?.animateCamera(
-            CameraUpdate.newLatLngZoom(LatLng(latitude, longitude), 16),
-          );
-        });
+          setState(() {
+            _latestBikePosition = position;
+            _markers = {
+              Marker(
+                markerId: const MarkerId("bike"),
+                position: position,
+                infoWindow: const InfoWindow(title: "Bike Location"),
+              ),
+            };
+          });
+
+          if (_mapController != null) {
+            _mapController!.animateCamera(
+              CameraUpdate.newLatLngZoom(position, 16),
+            );
+          }
+        } else {
+          debugPrint('Telemetry missing latitude/longitude: $telemetry');
+        }
       } else {
         print("Error: ${response.statusCode}");
       }
     } catch (e) {
       print("Error fetching bike location: $e");
     }
+  }
+
+  double? _parseCoordinate(Map<String, dynamic>? source, List<String> keys) {
+    if (source == null) return null;
+    for (final key in keys) {
+      if (!source.containsKey(key)) continue;
+      final value = source[key];
+      if (value is num) return value.toDouble();
+      if (value is String) {
+        final parsed = double.tryParse(value);
+        if (parsed != null) return parsed;
+      }
+    }
+    return null;
   }
 
   /// Fetch bike health from API
@@ -679,8 +564,8 @@ class _BikestatusState extends State<Bikestatus> {
 
         setState(() {
           batteryLevel = (health['battery'] ?? 0.0).toDouble();
-          heartbeatStatus = health['heartbeat'] ?? "Inactive";
-          bikeMode = health['mode'] ?? "lock";
+          heartbeatStatus = _getHeartbeatStatus(health['heartbeat'] ?? 0);
+          bikeMode = _getModeName(health['mode'] ?? 5);
           isRideMode = (bikeMode.toLowerCase() == "ride");
         });
       } else {

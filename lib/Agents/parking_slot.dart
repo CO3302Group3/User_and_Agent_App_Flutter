@@ -9,6 +9,7 @@ class ParkingSlot {
   final int bikesAllowed;
   final int totalSpaces;
   final String? assignedDeviceId;
+  final String status; // Added status field
 
   ParkingSlot({
     this.id,
@@ -21,6 +22,7 @@ class ParkingSlot {
     required this.bikesAllowed,
     required this.totalSpaces,
     this.assignedDeviceId,
+    this.status = 'pending', // Default to pending
   });
 }
 

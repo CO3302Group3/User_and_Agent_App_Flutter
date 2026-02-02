@@ -146,7 +146,7 @@ class _AddParkingSlotScreenState extends State<AddParkingSlotScreen> {
         "available_days": _selectedDays.toList(),
         "bikes_allowed": int.tryParse(_bikesAllowedController.text) ?? 0,
         "total_spaces": int.tryParse(_totalSpacesController.text) ?? 0,
-        "status": "available",
+        "status": "pending",
         "assigned_device_id": widget.existingSlot?.assignedDeviceId
       };
 
@@ -242,11 +242,11 @@ class _AddParkingSlotScreenState extends State<AddParkingSlotScreen> {
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Parking slot ${isEdit ? 'updated' : 'created'} successfully!")),
+          SnackBar(content: Text("Parking slot ${isEdit ? 'updated' : 'requested'} successfully! Pending approval.")),
         );
         Navigator.pop(context, slot);
       } else {
-        String errorMessage = "Failed to ${isEdit ? 'update' : 'create'} slot";
+        String errorMessage = "Failed to ${isEdit ? 'update' : 'request'} slot";
         try {
             final errorData = jsonDecode(response.body);
             if (errorData['detail'] != null) {
@@ -278,7 +278,7 @@ class _AddParkingSlotScreenState extends State<AddParkingSlotScreen> {
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(widget.existingSlot != null ? "Update Parking Slot" : "Add Parking Slot", style: const TextStyle(color: Colors.white)),
+        title: Text(widget.existingSlot != null ? "Update Parking Slot" : "Request Parking Slot", style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.indigo.shade800,
       ),
       body: Container(
@@ -392,7 +392,7 @@ class _AddParkingSlotScreenState extends State<AddParkingSlotScreen> {
                 : ElevatedButton.icon(
                   onPressed: _saveSlot,
                   icon: const Icon(Icons.save),
-                  label: Text(widget.existingSlot != null ? "Update Slot" : "Add Slot"),
+                  label: Text(widget.existingSlot != null ? "Update Slot" : "Request Slot"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo.shade800,
                     foregroundColor: Colors.white,

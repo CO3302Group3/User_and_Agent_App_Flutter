@@ -192,17 +192,12 @@ class _AgentsignupState extends State<Agentsignup> {
                           }
 
                           try {
-                            print("Sending request to: http://${main.appConfig.baseURL}/auth/register");
-                            
                             final response = await createuser(
                               main.appConfig.baseURL,
                               _usernameController.text,
                               _passwordController.text,
                               _emailController.text,
                             );
-                            
-                            print("Response Status: ${response.statusCode}");
-                            print("Response Body: ${response.body}");
 
                             if (response.statusCode == 200 || response.statusCode == 201) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -266,16 +261,7 @@ class _AgentsignupState extends State<Agentsignup> {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, dynamic>{
-        'username': username,
-        'password': password,
-        'email': email,
-        'role': 'agent',
-        'user_type': 'agent',
-        'status': 'active',
-        'is_agent': true,
-        'is_admin': true
-      }),
+      body: jsonEncode(<String, String>{'username': username, 'password': password , 'email':email}),
     );
   }
 
