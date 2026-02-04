@@ -242,7 +242,26 @@ class _LoginscreenState extends State<Loginscreen> {
                       if (token != null) {
                         // Save the token for future use
                         await TokenStorageFallback.saveToken(token);
-                        await TokenStorageFallback.saveUserInfo(email: email);
+                        
+                        // Extract username from JWT
+                        String? username;
+                        try {
+                          final parts = token.split('.');
+                          if (parts.length == 3) {
+                            final payload = parts[1];
+                            final normalized = base64Url.normalize(payload);
+                            final resp = utf8.decode(base64Url.decode(normalized));
+                            final payloadMap = jsonDecode(resp);
+                            username = payloadMap['username'];
+                          }
+                        } catch (e) {
+                          print("Error decoding ID token: $e");
+                        }
+
+                        await TokenStorageFallback.saveUserInfo(
+                          email: email, 
+                          username: username ?? email // Fallback to email if no username
+                        );
                         
                         print("Login successful: $token");
                         ScaffoldMessenger.of(context).showSnackBar(

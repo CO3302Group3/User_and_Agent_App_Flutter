@@ -11,6 +11,10 @@ class ParkingSlot {
   final String? assignedDeviceId;
   final String status; // Added status field
 
+  final int occupied;
+  final List<dynamic> bookings;
+  final List<dynamic> members; // Added members field
+
   ParkingSlot({
     this.id,
     required this.name,
@@ -22,7 +26,10 @@ class ParkingSlot {
     required this.bikesAllowed,
     required this.totalSpaces,
     this.assignedDeviceId,
-    this.status = 'pending', // Default to pending
+    this.status = 'pending',
+    this.occupied = 0,
+    this.bookings = const [], 
+    this.members = const [], // Default to empty
   });
 }
 

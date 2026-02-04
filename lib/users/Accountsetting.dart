@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../main.dart';
+import '../services/token_storage_fallback.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   const AccountSettingsPage({super.key});
@@ -10,16 +14,30 @@ class AccountSettingsPage extends StatefulWidget {
 }
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
-  final TextEditingController _usernameController =
-  TextEditingController(text: "");
-  final TextEditingController _emailController =
-  TextEditingController(text: "");
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  // ... existing password controllers ...
   final TextEditingController _currentPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   File? _profileImage;
   final picker = ImagePicker();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userInfo = await TokenStorageFallback.getUserInfo();
+    setState(() {
+      _usernameController.text = userInfo['username'] ?? '';
+      _emailController.text = userInfo['email'] ?? '';
+    });
+  }
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -51,20 +69,86 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
-  void _saveChanges() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Saved"),
-        content: const Text("Account details updated successfully."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          )
-        ],
-      ),
-    );
+  Future<void> _saveChanges() async {
+    setState(() => _isLoading = true);
+
+    try {
+       final token = await TokenStorageFallback.getToken();
+       if (token == null) return;
+       
+       final url = Uri.parse("http://${appConfig.baseURL}:8003/user/update");
+       
+       final Map<String, dynamic> payload = {
+         "username": _usernameController.text.trim(),
+         "email": _emailController.text.trim(),
+       };
+       
+       // Handle Password Change if fields are entered
+       if (_newPasswordController.text.isNotEmpty) {
+          if (_newPasswordController.text != _confirmPasswordController.text) {
+             ScaffoldMessenger.of(context).showSnackBar(
+               const SnackBar(content: Text("New and Confirm Password do not match."), backgroundColor: Colors.red),
+             );
+             setState(() => _isLoading = false);
+             return;
+          }
+          payload["password"] = _newPasswordController.text.trim();
+       }
+       
+       final response = await http.put(
+         url,
+         headers: {
+           "Content-Type": "application/json",
+           "Authorization": "Bearer $token",
+         },
+         body: jsonEncode(payload),
+       );
+       
+       if (response.statusCode == 200) {
+          // Update local storage
+          await TokenStorageFallback.saveToken(token);
+          await TokenStorageFallback.saveUserInfo(
+              username: _usernameController.text.trim(),
+              email: _emailController.text.trim(),
+          );
+
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text("Saved"),
+                content: const Text("Account details updated successfully."),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("OK"),
+                  )
+                ],
+              ),
+            );
+            
+            // Clear passwords
+            _currentPasswordController.clear();
+            _newPasswordController.clear();
+            _confirmPasswordController.clear();
+          }
+       } else {
+          if (mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(
+               SnackBar(content: Text("Update Failed: ${response.body}"), backgroundColor: Colors.red),
+             );
+          }
+       }
+    } catch (e) {
+       print("Error updating profile: $e");
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+         );
+       }
+    } finally {
+       if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _changePassword() {

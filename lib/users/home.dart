@@ -1,15 +1,37 @@
 import 'package:computer_engineering_project/users/parkingslotscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import '../services/token_storage_fallback.dart'; // Import TokenStorageFallback
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  String _username = "User"; // Default name
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    final userInfo = await TokenStorageFallback.getUserInfo();
+    if (userInfo['username'] != null && userInfo['username']!.isNotEmpty) {
+      setState(() {
+        _username = userInfo['username']!;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -42,17 +64,17 @@ class Home extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    'Hi, Vithurshana 👋',
-                    style: TextStyle(
+                    'Hi, $_username 👋', // Dynamic Username
+                    style: const TextStyle(
                       fontSize: 35,
                       color: Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 8),
+                  const Text(
                     'Where would you like to park today?',
                     style: TextStyle(
                       fontSize: 25,
@@ -64,7 +86,6 @@ class Home extends StatelessWidget {
             ),
 
             const SizedBox(height: 35),
-
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -83,7 +104,7 @@ class Home extends StatelessWidget {
                     horizontal: 15,
                   ),
                   decoration: BoxDecoration(
-                    color:  Color(0xFF3F51B5),
+                    color:  const Color(0xFF3F51B5),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -97,9 +118,7 @@ class Home extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
                       const Row(
-
                         children: [
                           Icon(
                             Icons.pedal_bike,

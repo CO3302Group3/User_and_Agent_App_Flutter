@@ -128,53 +128,7 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    backgroundColor: const Color(0xFF3F51B5),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isNotificationOn = !isNotificationOn;
-                    });
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          SizedBox(width: 20),
-                          Icon(Icons.notifications, size: 22, color: Colors.white),
-                          SizedBox(width: 30),
-                          Text(
-                            "Notifications",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 20),
-                        child: Switch(
-                          value: isNotificationOn,
-                          onChanged: (bool value) {
-                            setState(() {
-                              isNotificationOn = value;
-                            });
-                          },
-                          activeColor: Colors.white,
-                          inactiveThumbColor: Colors.grey[300],
-                          inactiveTrackColor: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+             
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
@@ -210,42 +164,8 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    backgroundColor: const Color(0xFF3F51B5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  onPressed: () {
-                     // Navigate to Report Complaint Screen
-                     // Make sure to import it at the top
-                     Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportComplaintScreen()));
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(width: 20),
-                          Icon(Icons.report_problem_outlined, size: 22, color: Colors.white),
-                          SizedBox(width: 30),
-                          Text(
-                            "Report Complaint",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child: Icon(Icons.chevron_right, size: 22, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+             
+            
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),

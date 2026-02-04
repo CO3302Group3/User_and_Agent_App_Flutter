@@ -46,7 +46,7 @@ class _ReportComplaintScreenState extends State<ReportComplaintScreen> {
       final token = await TokenStorageFallback.getToken();
       
       final response = await http.post(
-        Uri.parse('http://${main.appConfig.baseURL}/complaints'),
+        Uri.parse('http://${main.appConfig.baseURL}/auth/complaints'),
         headers: {
           'Content-Type': 'application/json',
         },

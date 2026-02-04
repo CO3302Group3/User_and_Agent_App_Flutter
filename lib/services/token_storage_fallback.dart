@@ -67,25 +67,21 @@ class TokenStorageFallback {
   }
 
   // Save user info
-  static Future<void> saveUserInfo({String? userId, String? email}) async {
+  static Future<void> saveUserInfo({String? userId, String? email, String? username}) async {
     if (_useMemoryStorage) {
       if (userId != null) _userId = userId;
       if (email != null) _email = email;
+       // We can store username in a static var if needed, but for now let's just use prefs for simplicity or add a var
       return;
     }
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (userId != null) {
-        await prefs.setString('user_id', userId);
-      }
-      if (email != null) {
-        await prefs.setString('user_email', email);
-      }
+      if (userId != null) await prefs.setString('user_id', userId);
+      if (email != null) await prefs.setString('user_email', email);
+      if (username != null) await prefs.setString('user_name', username);
     } catch (e) {
-      print('Error saving user info to SharedPreferences, using memory: $e');
-      if (userId != null) _userId = userId;
-      if (email != null) _email = email;
+      print('Error saving user info: $e');
       _useMemoryStorage = true;
     }
   }
@@ -96,6 +92,7 @@ class TokenStorageFallback {
       return {
         'userId': _userId,
         'email': _email,
+        'username': null, // In-memory fallback incomplete for username for now, prioritizing prefs
       };
     }
 
@@ -104,13 +101,13 @@ class TokenStorageFallback {
       return {
         'userId': prefs.getString('user_id'),
         'email': prefs.getString('user_email'),
+        'username': prefs.getString('user_name'),
       };
     } catch (e) {
-      print('Error getting user info from SharedPreferences, using memory: $e');
-      _useMemoryStorage = true;
       return {
         'userId': _userId,
         'email': _email,
+        'username': null,
       };
     }
   }

@@ -1,7 +1,9 @@
 import 'package:computer_engineering_project/users/Accountsetting.dart';
 import 'package:computer_engineering_project/users/Appupdatescreen.dart';
 import 'package:computer_engineering_project/users/Loginscreen.dart';
-import 'package:computer_engineering_project/users/Rating_Feedback.dart';
+import 'package:computer_engineering_project/Agents/AgentViewFeedback.dart';
+import 'package:computer_engineering_project/users/Loginscreen.dart';
+// import 'package:computer_engineering_project/users/Rating_Feedback.dart'; // No longer needed here if we only view.
 import 'package:flutter/material.dart';
 
 class Agentprofile extends StatefulWidget {
@@ -94,33 +96,29 @@ class _ProfileState extends State<Agentprofile> {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.person_outline,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
+                    const SizedBox(width: 20),
+                    const Icon(Icons.person_outline, size: 22, color: Colors.white),
+                    const SizedBox(width: 30),
+                    const Text(
                       "Account",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 170,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                    const SizedBox(width: 20),
                   ],
                 ),
               ),
             ),
 
-            SizedBox(height: 10,),
+            const SizedBox(height: 10),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: TextButton(
                 style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
                   setState(() {
@@ -130,15 +128,14 @@ class _ProfileState extends State<Agentprofile> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.notifications,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
+                    const SizedBox(width: 20),
+                    const Icon(Icons.notifications, size: 22, color: Colors.white),
+                    const SizedBox(width: 30),
+                    const Text(
                       "Notifications",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 110,), // Pushes the switch to the far right
+                    const Spacer(),
                     Switch(
                       value: isNotificationOn,
                       onChanged: (bool value) {
@@ -150,44 +147,41 @@ class _ProfileState extends State<Agentprofile> {
                       inactiveThumbColor: Colors.grey[300],
                       inactiveTrackColor: Colors.grey[500],
                     ),
+                    const SizedBox(width: 10),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 10,),
+            const SizedBox(height: 10),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: TextButton(
                 style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> RatingFeedback()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AgentViewFeedback()));
                 },
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.feedback_outlined,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
+                    const SizedBox(width: 20),
+                    const Icon(Icons.feedback_outlined, size: 22, color: Colors.white),
+                    const SizedBox(width: 30),
+                    const Text(
                       "Rating & Feedback ",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 90,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                    const SizedBox(width: 20),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 10,),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: TextButton(
@@ -199,52 +193,49 @@ class _ProfileState extends State<Agentprofile> {
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const AppUpdateScreen()));
                 },
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 20),
-                    Icon(Icons.system_update_alt_outlined, size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
+                    const SizedBox(width: 20),
+                    const Icon(Icons.system_update_alt_outlined, size: 22, color: Colors.white),
+                    const SizedBox(width: 30),
+                    const Text(
                       "App Updates & Notices",
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 50),
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                    const SizedBox(width: 20),
                   ],
                 ),
               ),
             ),
 
-            SizedBox(height: 10,),
+            const SizedBox(height: 10),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: TextButton(
                 style: TextButton.styleFrom(
-
-                  padding: const EdgeInsets.symmetric( vertical: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   backgroundColor: const Color(0xFF3F51B5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder:(context)=> Loginscreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => Loginscreen()));
                 },
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 20,),
-                    Icon(Icons.logout,
-                        size: 22, color: Colors.white),
-                    SizedBox(width: 30),
-                    Text(
+                    const SizedBox(width: 20),
+                    const Icon(Icons.logout, size: 22, color: Colors.white),
+                    const SizedBox(width: 30),
+                    const Text(
                       "Log Out",
-                      style: TextStyle(color: Colors.white,fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    SizedBox(width: 170,),
-
-                    Icon(Icons.chevron_right, size: 22, color: Colors.white,)
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, size: 22, color: Colors.white),
+                    const SizedBox(width: 20),
                   ],
                 ),
               ),

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../main.dart' as main;
+import '../services/token_storage_fallback.dart';
 
 class Requests extends StatefulWidget {
   const Requests({super.key});
@@ -8,87 +12,150 @@ class Requests extends StatefulWidget {
 }
 
 class _RequestsState extends State<Requests> {
-  final List<Map<String, String>> arrivalRequests = [
-    {
-      "name": "Vithurshana",
-      "arrivalTime": "10:05 AM",
-      "price": "100"
-    },
-  ];
+  bool isLoading = true;
+  List<Map<String, dynamic>> arrivalRequests = [];
+  List<Map<String, dynamic>> departureRequests = [];
 
-  final List<Map<String, String>> departureRequests = [
-    {
-      "name": "Vithurshana",
-      "departureTime": "12:45 PM",
-      "price": "100"
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchRequests();
+  }
 
-  void _showArrivalDialog(Map<String, String> item) {
-    String plateNumber = '';
-    String paymentType = 'Cash';
+  Future<void> _fetchRequests() async {
+    setState(() => isLoading = true);
+    try {
+      final token = await TokenStorageFallback.getToken();
+      if (token == null) return;
 
+      final url = Uri.parse('http://${main.appConfig.baseURL}:8004/parking_slots');
+      final response = await http.get(url, headers: {'Content-Type': 'application/json'});
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final slots = data['parking_slots'] as List<dynamic>;
+
+        final List<Map<String, dynamic>> newArrivals = [];
+        final List<Map<String, dynamic>> newDepartures = [];
+
+        for (var slot in slots) {
+          final bookings = slot['bookings'] as List<dynamic>? ?? [];
+          for (int i = 0; i < bookings.length; i++) {
+            final b = bookings[i];
+            final status = b['status'] ?? 'booked';
+            
+            // Enrich with slotId and index for update
+            final reqData = {
+              "slotId": slot['id'] ?? slot['slot_id'],
+              "bookingIndex": i,
+              "name": b['username'] ?? "Unknown",
+              "plate_number": b['plate_number'] ?? "?",
+              "price": b['price'] ?? "0",
+              "bookings": bookings, // Needed for full update
+              "occupied": slot['occupied'] ?? 0,
+              "bikes_allowed": slot['bikes_allowed'] ?? 0
+            };
+
+            if (status == 'check_in_requested') {
+              newArrivals.add(reqData);
+            } else if (status == 'check_out_requested') {
+              newDepartures.add(reqData);
+            }
+          }
+        }
+        
+        setState(() {
+          arrivalRequests = newArrivals;
+          departureRequests = newDepartures;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching requests: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _confirmRequest(Map<String, dynamic> req, bool isArrival, {String? confirmedPlate}) async {
+    try {
+       final token = await TokenStorageFallback.getToken();
+       if (token == null) return;
+
+       final String slotId = req['slotId'];
+       final List<dynamic> bookings = List.from(req['bookings']);
+       final int index = req['bookingIndex'];
+       int occupied = req['occupied'];
+       
+       // Update Status & Time
+       if (isArrival) {
+         bookings[index]['status'] = 'active';
+         bookings[index]['arrival_time'] = DateTime.now().toIso8601String();
+         if (confirmedPlate != null) {
+            bookings[index]['plate_number'] = confirmedPlate;
+         }
+         // Occupancy already incremented on book? Yes, user side incremented it on book. 
+         // So we just confirm.
+       } else {
+         bookings[index]['status'] = 'completed';
+         bookings[index]['departure_time'] = DateTime.now().toIso8601String();
+         // Check out -> Decrement Occupancy
+         occupied = occupied - 1;
+         if (occupied < 0) occupied = 0;
+       }
+
+       final url = Uri.parse('http://${main.appConfig.baseURL}:8004/parking_slots/$slotId');
+       final body = jsonEncode({
+         "payload": {
+           "bookings": bookings,
+           "occupied": occupied
+         },
+         "authorization": { "token": token }
+       });
+
+       final response = await http.put(
+         url, 
+         headers: {'Content-Type': 'application/json'},
+         body: body
+       );
+
+       if (response.statusCode == 200) {
+         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Confirmed Successfully")));
+         _fetchRequests(); // Refresh
+       } else {
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed: ${response.body}")));
+       }
+    } catch (e) {
+      print("Error confirming: $e");
+    }
+  }
+
+  void _showArrivalDialog(Map<String, dynamic> item) {
+    TextEditingController plateCtrl = TextEditingController(text: item['plate_number']);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("${item['name']} requested to check in"),
+          title: Text("Confirm Check-In: ${item['name']}"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: const InputDecoration(
-                  labelText: "Enter Plate Number",
-                  prefixIcon: Icon(Icons.directions_bike),
-                ),
-                onChanged: (value) => plateNumber = value,
+                controller: plateCtrl,
+                decoration: const InputDecoration(labelText: "Confirm Plate Number"),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Text("Payment Type: "),
-                  const SizedBox(width: 10),
-                  DropdownButton<String>(
-                    value: paymentType,
-                    items: const [
-                      DropdownMenuItem(value: "Cash", child: Text("Cash")),
-                      DropdownMenuItem(value: "Card", child: Text("Card")),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          paymentType = value;
-                        });
-                        Navigator.pop(context);
-                        _showArrivalDialog(item);
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Icon(Icons.currency_rupee),
-                  Text("Price: LKR ${item['price']}"),
-                ],
-              )
+              const SizedBox(height: 10),
+              Text("Price: Rs. ${item['price']}"),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Arrival Confirmed and Saved")),
-                );
+                _confirmRequest(item, true, confirmedPlate: plateCtrl.text);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text("Save"),
+              child: const Text("Confirm Arrival"),
             ),
           ],
         );
@@ -96,200 +163,81 @@ class _RequestsState extends State<Requests> {
     );
   }
 
-  void _showDepartureDialog(Map<String, String> item) {
-    String paymentType = 'Cash';
-    DateTime selectedDate = DateTime.now();
-
+  void _showDepartureDialog(Map<String, dynamic> item) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Confirm Departure"),
+          title: Text("Confirm Check-Out: ${item['name']}"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  const Text("Payment Type: "),
-                  const SizedBox(width: 10),
-                  DropdownButton<String>(
-                    value: paymentType,
-                    items: const [
-                      DropdownMenuItem(value: "Cash", child: Text("Cash")),
-                      DropdownMenuItem(value: "Card", child: Text("Card")),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          paymentType = value;
-                        });
-                        Navigator.pop(context);
-                        _showDepartureDialog(item);
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.date_range),
-                  const SizedBox(width: 10),
-                  Text("Date: ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}"),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () async {
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: DateTime(2024),
-                        lastDate: DateTime(2030),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          selectedDate = picked;
-                        });
-                        Navigator.pop(context);
-                        _showDepartureDialog(item);
-                      }
-                    },
-                    child: const Text("Pick Date"),
-                  )
-                ],
-              ),
+              Text("Plate: ${item['plate_number']}"),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.currency_rupee),
-                  Text("Price: LKR ${item['price']}"),
-                ],
-              )
+              Text("Price: Rs. ${item['price']}"),
+              const SizedBox(height: 10),
+              const Text("Departure time will be logged now."),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Exit"),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Departure Confirmed")),
-                );
+                _confirmRequest(item, false); // Departure
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
-              child: const Text("Save"),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              child: const Text("Confirm Departure"),
             ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildArrivalCard(Map<String, String> item) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("${item['name']} requested to check in",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.directions_walk, size: 18, color: Colors.teal),
-                const SizedBox(width: 6),
-                Text("Arrival Time: ${item['arrivalTime']}"),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.currency_rupee, size: 18, color: Colors.orange),
-                const SizedBox(width: 6),
-                Text("Price: LKR ${item['price']}"),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: () => _showArrivalDialog(item),
-                icon: const Icon(Icons.login),
-                label: const Text("Confirm Arrival"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDepartureCard(Map<String, String> item) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("${item['name']} is ready to check out",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.logout, size: 18, color: Colors.redAccent),
-                const SizedBox(width: 6),
-                Text("Departure Time: ${item['departureTime']}"),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.currency_rupee, size: 18, color: Colors.orange),
-                const SizedBox(width: 6),
-                Text("Price: LKR ${item['price']}"),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: () => _showDepartureDialog(item),
-                icon: const Icon(Icons.logout),
-                label: const Text("Confirm Departure"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: const Text("Requests", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.indigo,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          ...arrivalRequests.map(_buildArrivalCard),
-          ...departureRequests.map(_buildDepartureCard),
-        ],
-      ),
+      appBar: AppBar(title: const Text("Pending Requests"), backgroundColor: Colors.indigo),
+      body: isLoading 
+         ? const Center(child: CircularProgressIndicator())
+         : ListView(
+           padding: const EdgeInsets.all(16),
+           children: [
+             if (arrivalRequests.isEmpty && departureRequests.isEmpty)
+               const Center(child: Text("No Pending Requests")),
+             
+             if (arrivalRequests.isNotEmpty) ...[
+               const Text("Arrivals", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+               ...arrivalRequests.map((item) => Card(
+                 child: ListTile(
+                   leading: const Icon(Icons.login, color: Colors.green),
+                   title: Text(item['name']),
+                   subtitle: Text("Plate: ${item['plate_number']} | Rs. ${item['price']}"),
+                   trailing: ElevatedButton(
+                     onPressed: () => _showArrivalDialog(item),
+                     child: const Text("Confirm"),
+                   ),
+                 ),
+               )),
+             ],
+             const SizedBox(height: 20),
+             if (departureRequests.isNotEmpty) ...[
+               const Text("Departures", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+               ...departureRequests.map((item) => Card(
+                 child: ListTile(
+                   leading: const Icon(Icons.logout, color: Colors.red),
+                   title: Text(item['name']),
+                   subtitle: Text("Plate: ${item['plate_number']} | Rs. ${item['price']}"),
+                   trailing: ElevatedButton(
+                     onPressed: () => _showDepartureDialog(item),
+                     child: const Text("Confirm"),
+                   ),
+                 ),
+               )),
+             ]
+           ],
+         ),
     );
   }
 }
