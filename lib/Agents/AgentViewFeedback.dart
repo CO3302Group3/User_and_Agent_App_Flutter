@@ -30,27 +30,39 @@ class _AgentViewFeedbackState extends State<AgentViewFeedback> {
         throw Exception("Authentication token not found");
       }
 
-      final url = Uri.parse("http://${appConfig.baseURL}:8003/auth/admin/feedbacks");
+      final url = Uri.parse("http://${appConfig.baseURL}/auth/admin/feedbacks");
       final response = await http.post(
         url,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $token", // Send token in body if expected by backend wrapper, or header
+          "Authorization": "Bearer $token",
         },
-        body: json.encode({"token": token}), // Gateway expects token in body for admin routes usually
+        body: json.encode({"token": token}), 
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-             setState(() {
-            _feedbacks = data['data']['feedbacks'];
-            _isLoading = false;
-          });
-        } else {
-             throw Exception(data['message'] ?? "Failed to load");
+        final decoded = json.decode(response.body);
+        List<dynamic> feedbacksData = [];
+
+        if (decoded is List) {
+          feedbacksData = decoded;
+        } else if (decoded is Map<String, dynamic>) {
+            // Handle Gateway wrapper usually {"data": [...]} or similar
+            if (decoded.containsKey('data') && decoded['data'] is List) {
+               feedbacksData = decoded['data'];
+            } else if (decoded.containsKey('data') && decoded['data'] is Map && decoded['data']['feedbacks'] is List) {
+               // Fallback for previous structure just in case
+               feedbacksData = decoded['data']['feedbacks'];
+            } else {
+               // If it's a map but structure is unknown, try to find a list or just ignore
+               print("Unexpected JSON structure: $decoded");
+            }
         }
-       
+
+        setState(() {
+          _feedbacks = feedbacksData;
+          _isLoading = false;
+        });
       } else {
         throw Exception("Failed to load feedbacks: ${response.statusCode}");
       }

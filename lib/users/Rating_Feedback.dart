@@ -37,7 +37,7 @@ class _RatingFeedbackState extends State<RatingFeedback> {
         throw Exception("Authentication token not found");
       }
 
-      final url = Uri.parse("http://${appConfig.baseURL}:8003/auth/feedback");
+      final url = Uri.parse("http://${appConfig.baseURL}/auth/feedback");
       final response = await http.post(
         url,
         headers: {
